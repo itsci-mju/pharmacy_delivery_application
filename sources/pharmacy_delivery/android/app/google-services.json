@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "99473655799",
+    "project_id": "pharmacy-delivery-737df",
+    "storage_bucket": "pharmacy-delivery-737df.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99473655799:android:77eb1e3339da5dad94d0f2",
+        "android_client_info": {
+          "package_name": "com.example.pharmacy_delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "99473655799-vd512nf6jqbd77k89tlplip9cq6u0f80.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAo3kgeCCnQNMZDHdMpw7kAWJQK9naUccc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "99473655799-vd512nf6jqbd77k89tlplip9cq6u0f80.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
