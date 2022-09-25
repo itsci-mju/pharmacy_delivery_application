@@ -44,4 +44,21 @@ class Date {
   factory Date.toDate(DateTime dateTime) {
     return  Date(year: dateTime.year, month :dateTime.month-1, dayOfMonth:dateTime.day, hourOfDay:dateTime.hour, minute:dateTime.minute, second:dateTime.second);
   }
+
+  factory Date.fromString(String date) {
+    final dt = date.split(" ");
+
+    final d = dt[0].split("-");
+    final t = dt[1].split(":");
+
+
+    return Date(
+      year: int.parse(d[0]),
+      month: int.parse(d[1]),
+      dayOfMonth: int.parse(d[2]),
+      hourOfDay: int.parse(t[0]),
+      minute: int.parse(t[1]),
+      second: int.parse(t[2]),
+    );
+  }
 }
