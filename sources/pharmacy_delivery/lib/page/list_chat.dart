@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../class/Member.dart';
 import '../class/Message.dart';
 import '../utils/constants.dart';
+import '../utils/widget_functions.dart';
 
 class ListChat extends StatefulWidget {
   const ListChat({Key? key}) : super(key: key);
@@ -15,10 +18,23 @@ class ListChat extends StatefulWidget {
 class _ListChatState extends State<ListChat> {
   List<Member> listMember =  [];
   Message? lastMessage = Message();
+  final db =FirebaseFirestore.instance;
+  Message? chat;
+
+  Future getLastMessage(String pharmacistId , String customerId) async{
+   final chat =  await db.collection('$pharmacistId').doc("$customerId").collection("Message").get().then((value) => value.docs.last) ;
+   setState(() {
+     this.chat =  Message.fromDocument( chat);
+   });
+  }
 
   @override
   void initState() {
     super.initState();
+    final a = FirebaseFirestore.instance
+        .collection('60001').doc("manee123").collection("Message")
+        .snapshots();
+    print(a);
   }
 
   @override
@@ -58,79 +74,150 @@ class _ListChatState extends State<ListChat> {
                       Expanded(
                         child: Padding(
                           padding: sidePadding,
-                          child: ListView.builder(
-                            itemCount:  2,//listMember.length,
-                            itemBuilder: (BuildContext context, int index) {
-                             // final Message chat = lastMessage!;
-                              return GestureDetector(
-                                onTap: ()  {},
-                                child: Container(
-                                  margin: EdgeInsets.only(top: 5.0, bottom: 5.0, ),
-                                  padding:
-                                  EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.all(
-                                       Radius.circular(15.0),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      Row(
-                                        children: <Widget>[
-                                          CircleAvatar(
-                                            radius: 35.0,
-                                            backgroundImage: NetworkImage("https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/member%2Fuser.png?alt=media&token=5842fcab-a485-4e4a-936a-f157dd0da815"),
-                                          ),
-                                          SizedBox(width: 10.0),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              Text(
-                                                'chat.sender.name',
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 15.0,
-                                                  fontWeight: FontWeight.bold,
+                          child:
+                     StreamBuilder(
+                            stream: db.collection('60001')
+                               .orderBy("adviceId",descending: true)
+                                //.where("adviceId",isEqualTo: "200")
+                                .snapshots(),
+                            builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+                              if (streamSnapshot.connectionState == ConnectionState.waiting  ) {
+                                return forLoad_Data( themeData);
+                              }else if (streamSnapshot.hasData && streamSnapshot.data!.docs.isNotEmpty ){
+                                return  ListView.builder(
+                                  itemCount:  streamSnapshot.data!.docs.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    final docSnap = streamSnapshot.data!.docs[index];
+                                    print(docSnap.data()); //{adviceId: 306, MemberImg:"dddd"}
+                                    print(docSnap.reference.id); //manee123
+
+
+                                    String customerId = docSnap.reference.id;
+
+                                    return StreamBuilder(
+                                        stream: db.collection('60001').doc("$customerId").collection("Message").snapshots(),
+                                        builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot){
+                                          if (streamSnapshot.connectionState == ConnectionState.waiting ) {
+                                            return SizedBox();
+                                          }
+                                          Message? chat;
+                                          if(streamSnapshot.data!.docs.isNotEmpty){
+                                            chat =  Message.fromDocument( streamSnapshot.data!.docs.last);
+                                          }
+
+
+                                          return GestureDetector(
+                                            onTap: ()  {},
+                                            child: Container(
+                                              margin: EdgeInsets.only(top: 5.0, bottom: 5.0, ),
+                                              padding:
+                                              EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.all(
+                                                  Radius.circular(15.0),
                                                 ),
-                                              ),
-                                              SizedBox(height: 5.0),
-                                              Container(
-                                                width: MediaQuery.of(context).size.width * 0.45,
-                                                child: Text(
-                                                  "chat.text",
-                                                  style: TextStyle(
-                                                    color: Colors.blueGrey,
-                                                    fontSize: 15.0,
-                                                    fontWeight: FontWeight.w600,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey.withOpacity(0.15),
+                                                    spreadRadius: 5,
+                                                    blurRadius: 10,
+                                                    offset: Offset(0, 3), // changes position of shadow
                                                   ),
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
+                                                ],
                                               ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        children: <Widget>[
-                                          Text(
-                                            "chat.time",
-                                            style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 15.0,
-                                              fontWeight: FontWeight.bold,
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: <Widget>[
+                                                  Row(
+                                                    children: <Widget>[
+                                                      CircleAvatar(
+                                                        radius: 30.0,
+                                                        backgroundImage: NetworkImage(docSnap['MemberImg']!=""? docSnap['MemberImg'] : 'https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/member%2Fuser.png?alt=media&token=5842fcab-a485-4e4a-936a-f157dd0da815'),
+                                                      ),
+
+                                                      SizedBox(width: 10.0),
+                                                      Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: <Widget>[
+                                                          Text(
+                                                            "${customerId}",
+                                                            style: TextStyle(fontSize: 16,color: Colors.black87),
+                                                          ),
+                                                          SizedBox(height: 5.0),
+                                                          if(chat!=null)
+                                                          Container(
+                                                            width: MediaQuery.of(context).size.width * 0.45,
+                                                            child: Text(
+                                                              chat.sender=="60001"?  "คุณ : ${chat.text}"
+                                                                  : "${chat.text}"
+                                                              ,
+
+                                                              style: TextStyle(
+                                                                color: Colors.blueGrey,
+                                                                fontSize: 15.0,
+                                                                fontWeight: FontWeight.w600,
+                                                              ),
+                                                              overflow: TextOverflow.ellipsis,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+
+                                                  if(chat!=null)
+                                                  Column(
+                                                    children: <Widget>[
+                                                      if(chat!=null)
+                                                      Text(
+                                                        DateFormat('HH:mm').format(chat.time!),
+                                                        style: TextStyle(
+                                                          color: Colors.grey,
+                                                          fontSize: 15.0,
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 5.0),
+                                                      Text(""),
+                                                    ],
+                                                  )
+                                                  else
+                                                    Container(
+                                                      padding: EdgeInsets.symmetric(horizontal: 10),
+                                                    decoration: BoxDecoration(
+                                                      color:  Colors.amberAccent,
+                                                      borderRadius: BorderRadius.all(
+                                                        Radius.circular(10.0),
+                                                      ),
+                                                    ),
+
+                                                      child: Text(
+                                                        "New !",
+                                                        style: TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 16.0,
+                                                          fontWeight: FontWeight.w500
+                                                        ),
+                                                      ),
+                                                    ),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          SizedBox(height: 5.0),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
+                                          );
+
+                                        }
+                                    );
+
+
+                                  },
+                                );
+                              }else{
+                                return for_NodataFound( themeData,"ยังไม่มีแชทกับลูกค้า");
+                              }
+
                             },
-                          ),
+                          )
+
                         ),
                       )
                     ],
