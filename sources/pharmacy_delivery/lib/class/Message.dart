@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'Advice.dart';
 import 'Date.dart';
 
@@ -57,7 +59,17 @@ class Message {
   }
 */
 
-
+  factory Message.fromDocument(DocumentSnapshot doc) {
+    return Message(
+      //messageId: doc.get("messageId") == null ? null : doc.get("messageId"),
+      time: doc.get("time") == null ? null : Date.fromString(doc.get("time")).toDateTime(),
+      sender: doc.get("sender") == null ? null : doc.get("sender")  ,
+      recipient: doc.get("recipient")== null ? null :  doc.get("recipient"),
+      text: doc.get("text") == null ? null : doc.get("text")  ,
+      //advice: doc.get("advice") == null ? null : Advice.fromJson(doc.get("advice")),
+      messageType: doc.get("messageType") == null ? null : doc.get("messageType"),
+    );
+  }
 
 
 }
