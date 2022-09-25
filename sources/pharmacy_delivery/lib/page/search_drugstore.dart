@@ -162,7 +162,7 @@ class _SearchDrugstorePageState extends State<SearchDrugstorePage> {
                                           drugstore: snapShot.data![index]);
                                     });
                               } else {
-                                return for_NodataFound( themeData);
+                                return for_NodataFound( themeData,"ไม่พบผลการค้นหา");
                               }
                             }
                           }),

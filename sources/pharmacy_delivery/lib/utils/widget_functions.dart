@@ -53,7 +53,7 @@ Widget forLoad_Data(ThemeData themeData) {
 }
 
 
-Widget for_NodataFound( ThemeData themeData) {
+Widget for_NodataFound( ThemeData themeData,String message) {
   return Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -65,7 +65,7 @@ Widget for_NodataFound( ThemeData themeData) {
         ),
         Padding(
           padding: EdgeInsets.only(top: 16),
-          child: Text("ไม่พบผลการค้นหา",
+          child: Text(message,
               style: themeData.textTheme.headline4),
         )
       ],

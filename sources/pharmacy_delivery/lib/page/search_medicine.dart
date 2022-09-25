@@ -411,7 +411,7 @@ class _SearchMedicineState extends State<SearchMedicine> {
                                           ));
                                     });
                               }else {
-                                return for_NodataFound( themeData);
+                                return for_NodataFound( themeData,"ไม่พบผลการค้นหา");
                               }
 
                             }
