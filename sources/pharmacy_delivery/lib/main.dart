@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pharmacy_delivery/class/Pharmacist.dart';
 import 'package:pharmacy_delivery/page/chat_screen.dart';
 import 'package:pharmacy_delivery/page/confirm_order.dart';
+import 'package:pharmacy_delivery/page/list_chat.dart';
 import 'package:pharmacy_delivery/page/mainPage.dart';
 import 'package:pharmacy_delivery/page/main_page_guest.dart';
 import 'package:pharmacy_delivery/page/main_page_member.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pharmacy_delivery/api/pharmacist_api.dart';
 import 'package:pharmacy_delivery/class/Pharmacist.dart';
+import 'package:pharmacy_delivery/page/list_chat.dart';
 
 import '../costom/BorderIcon.dart';
 import '../utils/constants.dart';
@@ -27,7 +28,7 @@ class PharmacistHomePage extends StatefulWidget {
 
 class _PharmacistHomePageState extends State<PharmacistHomePage> {
   int index = 0;
-  List<StatefulWidget>  screens = [ListPaymentPage(), LoginPage()];
+  List<StatefulWidget>  screens = [ListPaymentPage(), ListChat(),  LoginPage()];
 
   Pharmacist? pharmacist = Pharmacist();
 
@@ -44,7 +45,7 @@ class _PharmacistHomePageState extends State<PharmacistHomePage> {
    getPharmacist();
     index=widget.index?? 0;
     setState(() {
-      screens = [ListPaymentPage(tab_index: widget.tab_index??0,), LoginPage()];
+      screens = [ListPaymentPage(tab_index: widget.tab_index??0), ListChat(),  LoginPage()];
 
     });
   }
@@ -72,6 +73,9 @@ class _PharmacistHomePageState extends State<PharmacistHomePage> {
                     BottomNavigationBarItem(
                         icon: Icon(Icons.list_alt),
                         label: "คำสั่งซื้อ",),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.chat),
+                      label: "แชท",),
                     BottomNavigationBarItem(
                         icon: Icon(Icons.logout),
                         label: "ออกจากระบบ",),

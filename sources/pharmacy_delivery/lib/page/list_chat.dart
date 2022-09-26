@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 
 import '../class/Member.dart';
 import '../class/Message.dart';
+import '../class/Pharmacist.dart';
 import '../utils/constants.dart';
+import '../utils/user_secure_storage.dart';
 import '../utils/widget_functions.dart';
 
 class ListChat extends StatefulWidget {
@@ -20,6 +22,14 @@ class _ListChatState extends State<ListChat> {
   Message? lastMessage = Message();
   final db =FirebaseFirestore.instance;
   Message? chat;
+  Pharmacist? pharmacist = Pharmacist();
+
+  Future getPharmacist() async {
+    final pharmacist = await UserSecureStorage.getPharmacist();
+    setState(() {
+      this.pharmacist = pharmacist;
+    });
+  }
 
   Future getLastMessage(String pharmacistId , String customerId) async{
    final chat =  await db.collection('$pharmacistId').doc("$customerId").collection("Message").get().then((value) => value.docs.last) ;
@@ -31,10 +41,7 @@ class _ListChatState extends State<ListChat> {
   @override
   void initState() {
     super.initState();
-    final a = FirebaseFirestore.instance
-        .collection('60001').doc("manee123").collection("Message")
-        .snapshots();
-    print(a);
+    getPharmacist();
   }
 
   @override
@@ -76,7 +83,7 @@ class _ListChatState extends State<ListChat> {
                           padding: sidePadding,
                           child:
                      StreamBuilder(
-                            stream: db.collection('60001')
+                            stream: db.collection('${pharmacist!.pharmacistID}')
                                .orderBy("adviceId",descending: true)
                                 //.where("adviceId",isEqualTo: "200")
                                 .snapshots(),
@@ -95,7 +102,7 @@ class _ListChatState extends State<ListChat> {
                                     String customerId = docSnap.reference.id;
 
                                     return StreamBuilder(
-                                        stream: db.collection('60001').doc("$customerId").collection("Message").snapshots(),
+                                        stream: db.collection('${pharmacist!.pharmacistID}').doc("$customerId").collection("Message").snapshots(),
                                         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot){
                                           if (streamSnapshot.connectionState == ConnectionState.waiting ) {
                                             return SizedBox();
@@ -107,7 +114,9 @@ class _ListChatState extends State<ListChat> {
 
 
                                           return GestureDetector(
-                                            onTap: ()  {},
+                                            onTap: ()  {
+                                              
+                                            },
                                             child: Container(
                                               margin: EdgeInsets.only(top: 5.0, bottom: 5.0, ),
                                               padding:
@@ -149,7 +158,7 @@ class _ListChatState extends State<ListChat> {
                                                           Container(
                                                             width: MediaQuery.of(context).size.width * 0.45,
                                                             child: Text(
-                                                              chat.sender=="60001"?  "คุณ : ${chat.text}"
+                                                              chat.sender=="${pharmacist!.pharmacistID}"?  "คุณ : ${chat.text}"
                                                                   : "${chat.text}"
                                                               ,
 
