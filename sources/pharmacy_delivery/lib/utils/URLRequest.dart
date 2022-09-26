@@ -29,6 +29,7 @@ class URLRequest {
   static const String URL_advice_add= URL+"/advice/add";
   static const String URL_advice_update_orderId= URL+"/advice/update_orderId";
   static const String URL_advice_end = URL+"/advice/end";
+  static const String URL_advice_get = URL+"/advice/get";
   //static const String URL_advice_end_member = URL+"/advice/end_member";
 
 

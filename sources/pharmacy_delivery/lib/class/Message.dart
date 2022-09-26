@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 import 'Advice.dart';
 import 'Date.dart';
@@ -69,6 +70,18 @@ class Message {
       //advice: doc.get("advice") == null ? null : Advice.fromJson(doc.get("advice")),
       messageType: doc.get("messageType") == null ? null : doc.get("messageType"),
     );
+  }
+
+  Map<String, dynamic> toDocument() {
+    DateTime t = DateTime(this.time!.year+543, this.time!.month, this.time!.day, this.time!.hour, this.time!.minute, this.time!.second);
+    return {
+      if (this.time != null) "time" :  DateFormat('yyyy-MM-dd HH:mm:ss').format(t ),
+      if (this.sender != null)"sender":  this.sender,
+      if (this.recipient != null)"recipient":  this.recipient,
+      if (this.text != null)"text":  this.text,
+      if (this.messageType != null)"messageType": this.messageType  ,
+
+    };
   }
 
 

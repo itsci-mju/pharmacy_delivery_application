@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pharmacy_delivery/api/advice_api.dart';
 
 import '../class/Member.dart';
 import '../class/Message.dart';
@@ -9,6 +10,7 @@ import '../class/Pharmacist.dart';
 import '../utils/constants.dart';
 import '../utils/user_secure_storage.dart';
 import '../utils/widget_functions.dart';
+import 'chat_screen.dart';
 
 class ListChat extends StatefulWidget {
   const ListChat({Key? key}) : super(key: key);
@@ -95,9 +97,8 @@ class _ListChatState extends State<ListChat> {
                                   itemCount:  streamSnapshot.data!.docs.length,
                                   itemBuilder: (BuildContext context, int index) {
                                     final docSnap = streamSnapshot.data!.docs[index];
-                                    print(docSnap.data()); //{adviceId: 306, MemberImg:"dddd"}
-                                    print(docSnap.reference.id); //manee123
-
+                                    //print(docSnap.data()); //{adviceId: 306, MemberImg:"dddd"}
+                                   // print(docSnap.reference.id); //manee123
 
                                     String customerId = docSnap.reference.id;
 
@@ -112,10 +113,19 @@ class _ListChatState extends State<ListChat> {
                                             chat =  Message.fromDocument( streamSnapshot.data!.docs.last);
                                           }
 
-
                                           return GestureDetector(
-                                            onTap: ()  {
-                                              
+                                            onTap: ()  async {
+                                              final advice = await AdviceApi.getAdvice(docSnap['adviceId']);
+                                              if(advice!=0){
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ChatScreen(advice: advice,shipping: "",)));
+                                              }else{
+                                                buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
+                                              }
+
                                             },
                                             child: Container(
                                               margin: EdgeInsets.only(top: 5.0, bottom: 5.0, ),
