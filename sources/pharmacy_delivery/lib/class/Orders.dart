@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 import 'Address.dart';
@@ -80,6 +81,42 @@ class Orders {
     };
   }
 
-//
+  factory Orders.fromDocument(DocumentSnapshot doc) {
+    return Orders(
+      orderDate: doc.get("orderDate") == null ? null :Date.fromString(doc.get("orderDate")).toDateTime2(),
+      sumQuantity: doc.get("sumQuantity")== null ? null :  doc.get("sumQuantity"),
+      subtotalPrice: doc.get("subtotalPrice")== null ? null :  doc.get("subtotalPrice"),
+      totalPrice: doc.get("totalPrice")== null ? null :  doc.get("totalPrice"),
+      orderStatus: doc.get("orderStatus")== null ? null :  doc.get("orderStatus"),
+      shippingCost: doc.get("shippingCost")== null ? null :  doc.get("shippingCost"),
+      //address: doc.get("address")== null ? null : Address.fromJson(doc.get("address")),
+    );
+  }
+
+  Map<String, dynamic> toDocument() {
+    return {
+      "orderDate" :  DateTimetoString(this.orderDate!) ,
+      "sumQuantity":  this.sumQuantity,
+      "subtotalPrice":  this.subtotalPrice,
+      "totalPrice":  this.totalPrice,
+      "orderStatus": this.orderStatus  ,
+      "shippingCost":  this.shippingCost,
+      //"address":  this.address,
+    };
+  }
+
+  /*
+  factory Orders.fromJson2(Map<String, dynamic> json) {
+    return Orders(
+      orderDate: json["orderDate"] == null ? null :Date.fromString(json["orderDate"]).toDateTime(),
+      sumQuantity: json["sumQuantity"]== null ? null : json["sumQuantity"],
+      subtotalPrice: json["subtotalPrice"]== null ? null : json["subtotalPrice"],
+      totalPrice: json["totalPrice"]== null ? null : json["totalPrice"],
+      orderStatus: json["orderStatus"]== null ? null : json["orderStatus"],
+      shippingCost: json["shippingCost"]== null ? null : json["shippingCost"],
+      address: json["address"]== null ? null : Address.fromJson(json["address"]),
+    );
+  }
+*/
 
 }

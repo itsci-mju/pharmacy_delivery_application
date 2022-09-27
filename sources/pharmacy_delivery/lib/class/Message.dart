@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'Advice.dart';
 import 'Date.dart';
+import 'Orders.dart';
 
 class Message {
   String? messageId;
@@ -20,7 +21,7 @@ class Message {
        this.recipient,
        this.text,
        this.advice,
-      this.messageType});
+      this.messageType, });
 
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
@@ -62,25 +63,22 @@ class Message {
 
   factory Message.fromDocument(DocumentSnapshot doc) {
     return Message(
-      //messageId: doc.get("messageId") == null ? null : doc.get("messageId"),
-      time: doc.get("time") == null ? null : Date.fromString(doc.get("time")).toDateTime(),
+        messageId: doc.id,
+        time: doc.get("time") == null ? null : Date.fromString(doc.get("time")).toDateTime(),
       sender: doc.get("sender") == null ? null : doc.get("sender")  ,
       recipient: doc.get("recipient")== null ? null :  doc.get("recipient"),
       text: doc.get("text") == null ? null : doc.get("text")  ,
-      //advice: doc.get("advice") == null ? null : Advice.fromJson(doc.get("advice")),
       messageType: doc.get("messageType") == null ? null : doc.get("messageType"),
     );
   }
 
   Map<String, dynamic> toDocument() {
-    DateTime t = DateTime(this.time!.year+543, this.time!.month, this.time!.day, this.time!.hour, this.time!.minute, this.time!.second);
     return {
-      if (this.time != null) "time" :  DateFormat('yyyy-MM-dd HH:mm:ss').format(t ),
-      if (this.sender != null)"sender":  this.sender,
-      if (this.recipient != null)"recipient":  this.recipient,
-      if (this.text != null)"text":  this.text,
-      if (this.messageType != null)"messageType": this.messageType  ,
-
+       "time" :  DateTimetoString(this.time!) ,
+      "sender":  this.sender,
+      "recipient":  this.recipient,
+      "text":  this.text,
+      "messageType": this.messageType  ,
     };
   }
 

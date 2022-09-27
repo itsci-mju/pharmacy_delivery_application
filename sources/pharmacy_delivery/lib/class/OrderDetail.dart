@@ -34,6 +34,8 @@ class OrderDetail {
       "note": this.note == null ? null :this.note,
     };
   }
+
+
 //
 
 }

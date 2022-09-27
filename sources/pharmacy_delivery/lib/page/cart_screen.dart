@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,7 +14,10 @@ import 'package:pharmacy_delivery/page/view_medicine.dart';
 import '../class/Address.dart';
 import '../class/Advice.dart';
 import '../class/Cart.dart';
+import '../class/Date.dart';
 import '../class/Message.dart';
+import '../class/OrderDetail.dart';
+import '../class/Orders.dart';
 import '../class/Stock.dart';
 import '../utils/constants.dart';
 import '../utils/custom_functions.dart';
@@ -39,6 +43,8 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   Advice? advice;
   List<Cart>? cart;
+  final db =FirebaseFirestore.instance;
+
 
   int sumQuantity =0;
   double subtotalPrice =0;
@@ -496,34 +502,45 @@ class _CartScreenState extends State<CartScreen> {
                           if (_formKey.currentState!.validate() || widget.address ==null) {
                             bool testResult = false;
 
-                            final orders = await OrdersApi.addOrders(sumQuantity, subtotalPrice, double.parse(shipping_controller.text==""? "0" :shipping_controller.text),widget.address);
-                            if(orders !=0){
-                              final ordersDetail = await OrderDetailApi.addOrderDetail(cart!,orders,advice!.pharmacist!.drugstore!.drugstoreID!);
-                              if(ordersDetail != 0){
-                                final updateOrderId = await AdviceApi.updateOrderId(advice!, orders);
-                                if(updateOrderId == 1){
+                            Message message = Message(time: DateTime.now(),sender:'${advice!.pharmacist!.pharmacistID}',recipient:"${advice!.member!.MemberUsername}", messageType:"orders");
+                            db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((messageSnapshot) {
+                              print("Added message with ID: ${messageSnapshot.id}");
+
+                              Orders orders = Orders(orderDate:DateTime.now(),sumQuantity:sumQuantity,subtotalPrice: subtotalPrice,totalPrice:subtotalPrice+shippingCost,orderStatus:"wcf",shippingCost:double.parse(shipping_controller.text==""? "0" :shipping_controller.text),address: widget.address  );
+                              db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(messageSnapshot.id).collection("Orders").add(orders.toDocument()).then((ordersSnapshot) {
+                              print("Added orders with ID: ${ordersSnapshot.id}");
+
+                              for(Cart c in cart!) {
+                                Map<String, dynamic> orderDetail = {
+                                  "medName": c.medicine!.medName,
+                                  "medId": c.medicine!.medId,
+                                  "medImg": c.medicine!.medImg,
+                                  "quantity": c.quantity,
+                                  "sumprice": c.sumprice,
+                                  "note": c.note,
+                                  "timeAdd" : DateTimetoString(DateTime.now())
+                                } ;
+
+                                db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(messageSnapshot.id).collection("Orders").doc(ordersSnapshot.id).collection("OrderDetail").add(orderDetail).then((value) {
+                                  print("Added orderDetail with ID: ${value.id}");
                                   setState(() {
-                                    advice!.orders = orders;
+                                    testResult = true;
                                   });
 
-                                  Message message = Message(time: DateTime.now(),sender: advice!.pharmacist!.pharmacistID, recipient: widget.recipient, advice: advice!,messageType:orders.orderId );
-                                  final addMessageOrder = await MessageApi.addMessage(message);
-                                  if(addMessageOrder != 0){
-                                    testResult = true;
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => ChatScreen(
-                                              advice: advice!,
-                                            )));
-                                  }
-
-                                }
+                                });
                               }
-                            }
-                            if(testResult==false){
-                              buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
-                            }
+
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ChatScreen(
+                                        advice: advice!,
+                                      )));
+
+
+                              } ).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+                            } ).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
                           }
                         },
                         child: Text(

@@ -116,7 +116,7 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                   child: Padding(
                     padding: sidePadding,
                     child:
-                      widget.advice!.orders!.address !=null ?
+                    widget.listOrderdetail![0].orders!.address !=null ?
                       Column(
                       //mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,17 +143,17 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                             widget.advice!.orders!.address!.name!,
+                              widget.listOrderdetail![0].orders!.address!.name!,
                               style: TextStyle(
                                 color: Colors.black54,fontSize: 14.0,),
                             ),
                             Text(
-                              widget.advice!.orders!.address!.tel!,
+                              widget.listOrderdetail![0].orders!.address!.tel!,
                               style: TextStyle(
                                 color: Colors.black54,fontSize: 14.0,),
                             ),
                             Text(
-                              widget.advice!.orders!.address!.addressDetail! ,
+                              widget.listOrderdetail![0].orders!.address!.addressDetail! ,
                               style: TextStyle(
                                 color: Colors.black54,fontSize: 14.0,),
                             ),
@@ -556,6 +556,9 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                         onPressed:() async {
                           double? totalPrice = total==0? orders.totalPrice : total ;
                           String? couponName = orders.coupon!=null? orders.coupon!.couponName : "";
+
+                        //  db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(msg.messageId).collection("Orders").doc("${streamSnapshot.data!.docs.first.id}").update({"orderStatus": "cf" })
+
                           final confirmOrder = await OrdersApi.confirmOrder(orders.orderId!, couponName!, totalPrice!);
                           if(confirmOrder!=0){
                             advice.orders!.orderStatus ="cf";

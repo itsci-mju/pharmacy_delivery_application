@@ -168,18 +168,31 @@ class _ListChatState extends State<ListChat> {
                                                           if(chat!=null)
                                                           Container(
                                                             width: MediaQuery.of(context).size.width * 0.45,
-                                                            child: Text(
-                                                              chat.sender=="${pharmacist!.pharmacistID}"?  "คุณ : ${chat.text}"
+                                                            child: chat.text!=null?
+                                                            Text(
+                                                              chat.sender=="${pharmacist!.pharmacistID}"?
+                                                                "คุณ : ${chat.text}"
                                                                   : "${chat.text}"
                                                               ,
-
                                                               style: TextStyle(
                                                                 color: Colors.blueGrey,
                                                                 fontSize: 15.0,
                                                                 fontWeight: FontWeight.w600,
                                                               ),
                                                               overflow: TextOverflow.ellipsis,
-                                                            ),
+                                                            ) :
+                                                            Text(
+                                                              chat.sender=="${pharmacist!.pharmacistID}"?
+                                                              "คุณ : รายการยาที่แนะนำ"
+                                                                  : "รายการยาที่แนะนำ"
+                                                              ,
+                                                              style: TextStyle(
+                                                                color: Colors.blueGrey,
+                                                                fontSize: 15.0,
+                                                                fontWeight: FontWeight.w600,
+                                                              ),
+                                                              overflow: TextOverflow.ellipsis,
+                                                            )
                                                           ),
                                                         ],
                                                       ),

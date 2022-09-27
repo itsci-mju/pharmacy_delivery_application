@@ -11,16 +11,11 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pharmacy_delivery/api/address_api.dart';
-import 'package:pharmacy_delivery/api/message_api.dart';
-import 'package:pharmacy_delivery/api/orderDetail_api.dart';
-import 'package:pharmacy_delivery/api/orders_api.dart';
+import 'package:pharmacy_delivery/class/Medicine.dart';
 import 'package:pharmacy_delivery/class/OrderDetail.dart';
-import 'package:pharmacy_delivery/page/confirm_order.dart';
-import 'package:pharmacy_delivery/page/list_order.dart';
 import 'package:pharmacy_delivery/page/main_page_member.dart';
 import 'package:pharmacy_delivery/page/pharmacist_home_page.dart';
 import 'package:pharmacy_delivery/page/search_medicine.dart';
-import 'package:pharmacy_delivery/page/view_drugstore.dart';
 import '../api/advice_api.dart';
 import '../class/Address.dart';
 import '../class/Advice.dart';
@@ -28,13 +23,13 @@ import '../class/Cart.dart';
 import '../class/Date.dart';
 import '../class/Member.dart';
 import '../class/Message.dart';
+import '../class/Orders.dart';
 import '../class/Pharmacist.dart';
-import '../class/Stock.dart';
 import '../utils/constants.dart';
 import '../utils/custom_functions.dart';
-import '../utils/storage_image.dart';
 import '../utils/user_secure_storage.dart';
 import '../utils/widget_functions.dart';
+import 'confirm_order.dart';
 
 class ChatScreen extends StatefulWidget {
   final Advice advice;
@@ -53,7 +48,6 @@ class _ChatScreenState extends State<ChatScreen> {
   //String curentUser_id = "manee123";
   Pharmacist pharmacist = Pharmacist();
   Member member = Member();
-  Future<List<OrderDetail>>? listOderdetail_Future ;
   TextEditingController message_ctl = TextEditingController();
   ScrollController scrollController = ScrollController();
   Message message = Message();
@@ -61,8 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Address? address;
   final db =FirebaseFirestore.instance;
 
-  //Future<String>? membereImg_Future ;
-  //Future<String>? pharmacistImg_Futute;
+
 
   List<Cart>? cart=[];
   int sumQTY=0;
@@ -130,8 +123,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
 
     });
-    //membereImg_Future = StorageImage().downloadeURL("member",widget.advice.member!.MemberImg?? 'user.png');
-    //pharmacistImg_Futute = StorageImage().downloadeURL("pharmacist",widget.advice.pharmacist!.pharmacistImg?? 'user.png');
 
 
   }
@@ -543,10 +534,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   _buildMessage(Message msg, bool isMe,)   {
     final ThemeData themeData = Theme.of(context);
-    if(msg.messageType!="text"){
-      listOderdetail_Future = OrderDetailApi.listOrderDetail(msg.messageType.toString());
-    }
-
 
     return Container(
       margin: EdgeInsets.only(top: 10),
@@ -606,315 +593,336 @@ class _ChatScreenState extends State<ChatScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        FutureBuilder<List<OrderDetail>>(
-                            future:  listOderdetail_Future ,// OrderDetailApi.listOrderDetail(msg.messageType!),
-                            builder: (context, snapShot) {
-                              if ( (snapShot.hasData && snapShot.data!.isNotEmpty)  && (snapShot.connectionState != ConnectionState.waiting) ){
-                               /* if (snapShot.hasData && snapShot.data!.isNotEmpty && snapShot.data != null){
-                                  listOrderdetail = snapShot.data?? [];
-                                }
-                                */
-                                List<OrderDetail> listOrderdetail =snapShot.data!;
+                        StreamBuilder(
+                            stream: db.collection('${advice!.pharmacist!.pharmacistID}')
+                                .doc("${advice!.member!.MemberUsername}").collection("Message")
+                                .doc("${msg.messageId}").collection("Orders")
+                                .snapshots(),
+                            builder: (context, AsyncSnapshot<QuerySnapshot>  streamSnapshot) {
+                              if ( (streamSnapshot.hasData && streamSnapshot.data!.docs.isNotEmpty)  && (streamSnapshot.connectionState != ConnectionState.waiting) ){
+                                Orders orders = Orders.fromDocument(streamSnapshot.data!.docs.first);
+                                orders.address = address;
+                                return StreamBuilder(
+                                    stream: db.collection('${advice!.pharmacist!.pharmacistID}')
+                                        .doc("${advice!.member!.MemberUsername}").collection("Message")
+                                        .doc("${msg.messageId}").collection("Orders")
+                                        .doc("${streamSnapshot.data!.docs.first.id}").collection("OrderDetail")
+                                        .orderBy("timeAdd")
+                                        .snapshots(),
+                                    builder: (context, AsyncSnapshot<QuerySnapshot>  snapShot) {
+                                      if ( (snapShot.hasData && snapShot.data!.docs.isNotEmpty)  && (snapShot.connectionState != ConnectionState.waiting) ){
+                                        List<OrderDetail> listOrderdetail = [];
 
-                                DateTime now = DateTime(DateTime.now().year+543, DateTime.now().month,DateTime.now().day,DateTime.now().hour,DateTime.now().minute,DateTime.now().second,DateTime.now().millisecond);
+                                        DateTime now = DateTime(DateTime.now().year+543, DateTime.now().month,DateTime.now().day,DateTime.now().hour,DateTime.now().minute,DateTime.now().second,DateTime.now().millisecond);
 
-                                DateTime limitTime = listOrderdetail[0].orders!.orderDate!.add(Duration(minutes: 10));
-                                print("222222222");
-                                print(limitTime.difference(now));
+                                        DateTime limitTime = orders.orderDate!.add(Duration(minutes: 2));
 
-                                return Container(
-                                  decoration:  listOrderdetail[0].orders!.orderStatus == "pc" ||  (now.isAfter(limitTime) && listOrderdetail[0].orders!.orderStatus=="wcf") ?
-                                  BoxDecoration(
-                                      image: DecorationImage(
-                                        image:AssetImage("assets/images/cancelled_stamp.png")  ,
-                                        fit: BoxFit.fitWidth,
-                                      )
-                                  ) :
-                                    listOrderdetail[0].orders!.orderStatus == "cf" || listOrderdetail[0].orders!.orderStatus == "store" || listOrderdetail[0].orders!.orderStatus == "wt" ?
-                                    BoxDecoration(
-                                      image: DecorationImage(
-                                      image: AssetImage("assets/images/confirm_stamp.png") ,
-                                      fit: BoxFit.fitWidth,
-                                      )
-                                    )
-                                      : BoxDecoration(),
+                                        bool isEnd=false;
+                                        SchedulerBinding.instance!.addPostFrameCallback((_){
+                                          if(scrollController.hasClients){
+                                            scrollController.animateTo(
+                                                scrollController.position.maxScrollExtent,
+                                                duration: const Duration(milliseconds: 100),
+                                                curve: Curves.ease);
+                                          }
 
-                                  child: Column(
-                                    children: [
-                                      ListView.builder(
-                                          shrinkWrap: true,
-                                          physics: BouncingScrollPhysics(),
-                                          itemCount:snapShot.data!.isNotEmpty ? snapShot.data!.length : 0 ,
-                                          itemBuilder: (context, index) {
-                                              OrderDetail od = OrderDetail();
-                                              od= snapShot.data![index];
+                                        });
 
-                                              return  Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  if(index==0)
-                                                    Column(children: [
-                                                      Align(
-                                                        alignment: Alignment.centerRight,
-                                                        child:  now.isBefore(limitTime) && od.orders!.orderStatus=="wcf"?
-                                                        TweenAnimationBuilder<Duration>(
-                                                            duration: limitTime.difference(now),
-                                                            tween: Tween(begin: limitTime.difference(now), end: Duration.zero),
-                                                            onEnd: () {
-                                                              print('Timer ended');
-                                                            },
-                                                            builder: (BuildContext context, Duration value, Widget? child) {
-                                                              final minutes = value.inMinutes;
-                                                              final seconds = value.inSeconds % 60;
-                                                              return Padding(
-                                                                  padding: const EdgeInsets.symmetric(vertical: 5),
-                                                                  child: Text( now.isBefore(limitTime) && od.orders!.orderStatus=="wcf"?
-                                                                      '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
-                                                                  :
-                                                                      'หมดอายุ',
-                                                                      textAlign: TextAlign.center,
-                                                                      style: TextStyle(
-                                                                          color: Colors.red,fontSize: 16)));
-                                                            })
-                                                            : SizedBox(),
+                                        return Container(
+                                          decoration:  orders.orderStatus == "pc" ||  (now.isAfter(limitTime) && orders.orderStatus=="wcf") ?
+                                          BoxDecoration(
+                                              image: DecorationImage(
+                                                image:AssetImage("assets/images/cancelled_stamp.png")  ,
+                                                fit: BoxFit.fitWidth,
+                                              )
+                                          ) :
+                                          orders.orderStatus == "cf" || orders.orderStatus == "store" || orders.orderStatus == "wt" ?
+                                          BoxDecoration(
+                                              image: DecorationImage(
+                                                image: AssetImage("assets/images/confirm_stamp.png") ,
+                                                fit: BoxFit.fitWidth,
+                                              )
+                                          )
+                                              : BoxDecoration(),
 
-                                                      ),
-                                                      Center(
-                                                        child: Text("รายการยาที่แนะนำ", style:themeData.textTheme.headline5,),
-                                                      ),
-                                                    ],),
+                                          child: Column(
+                                            children: [
+                                              ListView.builder(
+                                                  shrinkWrap: true,
+                                                  physics: BouncingScrollPhysics(),
+                                                  itemCount:snapShot.data!.docs.isNotEmpty ? snapShot.data!.docs.length : 0 ,
+                                                  itemBuilder: (context, index) {
+                                                    final docSnap = snapShot.data!.docs[index];
 
-                                                  Text(
-                                                    od.medicine!.medName!,
-                                                    style: themeData.textTheme.titleMedium ,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                  ),
-                                                  (od.note != null ) ?
-                                                  Text(
-                                                    od.note!,
-                                                    style: TextStyle(
-                                                      color: Colors.grey,
-                                                    ),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                  ):
-                                                  SizedBox(),
-                                                  Container(
-                                                    child: Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    OrderDetail od = OrderDetail (orders:orders, medicine:Medicine(medName:docSnap["medName"], medId:docSnap["medId"] ,medImg:docSnap["medImg"]), quantity:docSnap["quantity"], sumprice: docSnap["sumprice"], note: docSnap["note"] );
+                                                    listOrderdetail.add(od);
+
+                                                    return  Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
                                                       children: [
-                                                        Text.rich(
-                                                          TextSpan(
-                                                            text: formatCurrency(od.sumprice!/od.quantity!),
-                                                            style: TextStyle(
-                                                                fontWeight: FontWeight.w600, color: Colors.black54),
+                                                        if(index==0)
+                                                          Column(children: [
+                                                            Align(
+                                                              alignment: Alignment.centerRight,
+                                                              child:  now.isBefore(limitTime) && orders.orderStatus=="wcf"?
+                                                              TweenAnimationBuilder<Duration>(
+                                                                  duration: limitTime.difference(now),
+                                                                  tween: Tween(begin: limitTime.difference(now), end: Duration.zero),
+                                                                  onEnd: () {
+                                                                    print('Timer ended');
+                                                                    setState(() {
+                                                                      isEnd=true;
+                                                                    });
+                                                                    print(isEnd);
+                                                                  },
+                                                                  builder: (BuildContext context, Duration value, Widget? child) {
+                                                                    final minutes = value.inMinutes;
+                                                                    final seconds = value.inSeconds % 60;
+                                                                    return Padding(
+                                                                        padding: const EdgeInsets.symmetric(vertical: 5),
+                                                                        child: Text( now.isBefore(limitTime) && orders.orderStatus=="wcf"?
+                                                                        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
+                                                                            :
+                                                                        'หมดอายุ',
+                                                                            textAlign: TextAlign.center,
+                                                                            style: TextStyle(
+                                                                                color: Colors.red,fontSize: 16)));
+                                                                  })
+                                                                  : SizedBox(),
+
+                                                            ),
+                                                            Center(
+                                                              child: Text("รายการยาที่แนะนำ", style:themeData.textTheme.headline5,),
+                                                            ),
+                                                          ],),
+
+                                                        Text(
+                                                          od.medicine!.medName!,
+                                                          style: themeData.textTheme.titleMedium ,
+                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines: 1,
+                                                        ),
+                                                        (od.note != null ) ?
+                                                        Text(
+                                                          od.note!,
+                                                          style: TextStyle(
+                                                            color: Colors.grey,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines: 1,
+                                                        ):
+                                                        SizedBox(),
+                                                        Container(
+                                                          child: Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                             children: [
-                                                              TextSpan(
-                                                                  text: " x${od.quantity}",
-                                                                  style: Theme.of(context).textTheme.bodyText1),
+                                                              Text.rich(
+                                                                TextSpan(
+                                                                  text: formatCurrency(od.sumprice!/od.quantity!),
+                                                                  style: TextStyle(
+                                                                      fontWeight: FontWeight.w600, color: Colors.black54),
+                                                                  children: [
+                                                                    TextSpan(
+                                                                        text: " x${od.quantity}",
+                                                                        style: Theme.of(context).textTheme.bodyText1),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                formatCurrency(od.sumprice!),
+                                                                style: Theme.of(context).textTheme.bodyText1,
+                                                              ),
                                                             ],
                                                           ),
                                                         ),
-                                                        Text(
-                                                          formatCurrency(od.sumprice!),
+                                                        Divider(
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ],
+                                                    );
+
+                                                  }),
+                                              Column(
+                                                children: [
+                                                  if(orders.address!=null)
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: <Widget>[
+                                                        Text("รวม",
+                                                          style: Theme.of(context).textTheme.bodyText1,
+                                                        ),
+                                                        Text(formatCurrency(orders.subtotalPrice! ),
                                                           style: Theme.of(context).textTheme.bodyText1,
                                                         ),
                                                       ],
                                                     ),
-                                                  ),
-                                                  Divider(
-                                                    color: Colors.grey,
-                                                  ),
-                                                ],
-                                              );
-
-                                          }),
-                                      if (listOrderdetail.isNotEmpty ) Column(
-                                        children: [
-                                          if(listOrderdetail[0].orders!.address!=null)
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: <Widget>[
-                                              Text("รวม",
-                                                style: Theme.of(context).textTheme.bodyText1,
-                                              ),
-                                              Text(formatCurrency(listOrderdetail[0].orders!.subtotalPrice! ),
-                                                style: Theme.of(context).textTheme.bodyText1,
-                                              ),
-                                            ],
-                                          ),
-                                          if(listOrderdetail[0].orders!.address!=null)
-                                            Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: <Widget>[
-                                              Text("ค่าจัดส่ง",
-                                                style: Theme.of(context).textTheme.bodyText1,
-                                              ),
-                                              Text(formatCurrency(listOrderdetail[0].orders!.shippingCost! ),
-                                                style: Theme.of(context).textTheme.bodyText1,
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: <Widget>[
-                                              Text("รวมทั้งหมด",
-                                                style: Theme.of(context).textTheme.bodyText1,
-                                              ),
-                                              Text(formatCurrency(listOrderdetail[0].orders!.totalPrice! ),
-                                                style: Theme.of(context).textTheme.bodyText1,
-                                              ),
-                                            ],
-                                          ),
-
-                                          addVerticalSpace(5),
-
-                                         if( listOrderdetail[0].orders!.orderStatus == "wcf" &&  now.isBefore(limitTime) )
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              curentUser_id == advice!.member!.MemberUsername ?
-                                              ElevatedButton(
-                                                style:  ElevatedButton.styleFrom(
-                                                  primary: Colors.red, // Background color
-                                                ),
-                                                onPressed:()   {
-                                                  showDialog<String>(
-                                                    context: context,
-                                                    builder: (BuildContext context) => AlertDialog(
-                                                      shape: RoundedRectangleBorder(
-                                                          borderRadius: BorderRadius.circular(10)
-                                                      ),
-                                                      title:  Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
-                                                      content:  Text('ไม่ต้องการรับรายการยานี้ใช่หรือไม่', style: TextStyle( fontSize: 16),),
-                                                      actions: <Widget>[
-                                                        RaisedButton(
-                                                          onPressed: () => Navigator.pop(context, 'OK'),
-                                                          color: Colors.red,
-                                                          child: Text('ไม่ใช่', style: TextStyle(color: Colors.white),),
+                                                  if(orders.address!=null)
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                      children: <Widget>[
+                                                        Text("ค่าจัดส่ง",
+                                                          style: Theme.of(context).textTheme.bodyText1,
                                                         ),
-                                                        RaisedButton(
-                                                          onPressed: () async {
-                                                            final pCancelOrder = await OrdersApi.pCancelOrder(msg.messageType!,advice!);
-                                                            if(pCancelOrder!=0){
-                                                              setState(() {
-                                                                advice!.orders=null;
-                                                                //listMessage=listMessage;
-                                                              });
-                                                              Navigator.pop(context, 'OK');
-                                                              SchedulerBinding.instance!.addPostFrameCallback((_){
-                                                                // scrollController.jumpTo(scrollController.position.maxScrollExtent+70);
-                                                                if(scrollController.hasClients){
-                                                                  scrollController.animateTo(
-                                                                      scrollController.position.maxScrollExtent,
-                                                                      duration: const Duration(milliseconds: 100),
-                                                                      curve: Curves.ease);
-                                                                }
-
-                                                              });
-
-                                                            }else{
-                                                              buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
-                                                            }
-                                                          },
-                                                          color: COLOR_CYAN,
-                                                          child: Text('ใช่', style: TextStyle(color: Colors.white),),
+                                                        Text(formatCurrency(orders.shippingCost! ),
+                                                          style: Theme.of(context).textTheme.bodyText1,
                                                         ),
                                                       ],
                                                     ),
-                                                  );
-
-                                                },
-                                                child:  Text( "ไม่ยืนยัน" ,)
-                                              )
-                                              :
-                                              ElevatedButton(
-                                                  style:  ElevatedButton.styleFrom(
-                                                    primary: Colors.red, // Background color
-                                                  ),
-                                                  onPressed:()  async {
-                                                    showDialog<String>(
-                                                      context: context,
-                                                      builder: (BuildContext context) => AlertDialog(
-                                                        shape: RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius.circular(10)
-                                                        ),
-                                                        title:  Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
-                                                        content:  Text('ต้องการยกเลิกรายการยาใช่หรือไม่', style: TextStyle( fontSize: 16),),
-                                                        actions: <Widget>[
-                                                          RaisedButton(
-                                                            onPressed: () => Navigator.pop(context, 'OK'),
-                                                            color: Colors.red,
-                                                            child: Text('ไม่ใช่', style: TextStyle(color: Colors.white),),
-                                                          ),
-                                                          RaisedButton(
-                                                            onPressed: () async {
-                                                              final pCancelOrder = await OrdersApi.pCancelOrder(msg.messageType!,advice!);
-                                                              if(pCancelOrder!=0){
-                                                                buildToast("ยกเลิกรายการยาสำเร็จ",Colors.green);
-                                                                setState(() {
-                                                                  advice!.orders=null;
-                                                                 // listMessage=listMessage;
-                                                                });
-                                                                Navigator.pop(context, 'OK');
-                                                                SchedulerBinding.instance!.addPostFrameCallback((_){
-                                                                  // scrollController.jumpTo(scrollController.position.maxScrollExtent+70);
-                                                                  if(scrollController.hasClients){
-                                                                    scrollController.animateTo(
-                                                                        scrollController.position.maxScrollExtent,
-                                                                        duration: const Duration(milliseconds: 100),
-                                                                        curve: Curves.ease);
-                                                                  }
-
-                                                                });
-
-                                                              }else{
-                                                                buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
-                                                              }
-                                                            },
-                                                            color: COLOR_CYAN,
-                                                            child: Text('ใช่', style: TextStyle(color: Colors.white),),
-                                                          ),
-                                                        ],
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: <Widget>[
+                                                      Text("รวมทั้งหมด",
+                                                        style: Theme.of(context).textTheme.bodyText1,
                                                       ),
-                                                    );
-
-
-                                                  },
-                                                  child:  Text( "ยกเลิก" ,)
-                                              ),
-
-                                              addHorizontalSpace(10),
-
-                                              Visibility(
-                                                child:  ElevatedButton(
-                                                  style:  ElevatedButton.styleFrom(
-                                                    primary: Colors.green, // Background color
+                                                      Text(formatCurrency(orders.totalPrice! ),
+                                                        style: Theme.of(context).textTheme.bodyText1,
+                                                      ),
+                                                    ],
                                                   ),
-                                                  child: Text('ยืนยัน'),
-                                                  onPressed:() async {
-                                                    Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) => ConfirmOrder(listOrderdetail: listOrderdetail,advice:advice!) ));
-                                                  },
-                                                ),
-                                                visible:curentUser_id == advice!.member!.MemberUsername? true : false,
-                                              ),
+
+                                                  addVerticalSpace(5),
+
+                                                  if( orders.orderStatus == "wcf" &&  now.isBefore(limitTime) )
+                                                    Row(
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        curentUser_id == advice!.member!.MemberUsername ?
+                                                        ElevatedButton(
+                                                            style:  ElevatedButton.styleFrom(
+                                                              primary: Colors.red, // Background color
+                                                            ),
+                                                            onPressed:()   {
+                                                              showDialog<String>(
+                                                                context: context,
+                                                                builder: (BuildContext context) => AlertDialog(
+                                                                  shape: RoundedRectangleBorder(
+                                                                      borderRadius: BorderRadius.circular(10)
+                                                                  ),
+                                                                  title:  Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
+                                                                  content:  Text('ไม่ต้องการรับรายการยานี้ใช่หรือไม่', style: TextStyle( fontSize: 16),),
+                                                                  actions: <Widget>[
+                                                                    RaisedButton(
+                                                                      onPressed: () => Navigator.pop(context, 'OK'),
+                                                                      color: Colors.red,
+                                                                      child: Text('ไม่ใช่', style: TextStyle(color: Colors.white),),
+                                                                    ),
+                                                                    RaisedButton(
+                                                                      onPressed: () async {
+                                                                        db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(msg.messageId).collection("Orders").doc("${streamSnapshot.data!.docs.first.id}").update({"orderStatus": "pc" }).then((value) {
+                                                                          Navigator.pop(context, 'OK');
+                                                                          SchedulerBinding.instance!.addPostFrameCallback((_){
+                                                                            if(scrollController.hasClients){
+                                                                              scrollController.animateTo(
+                                                                                  scrollController.position.maxScrollExtent,
+                                                                                  duration: const Duration(milliseconds: 100),
+                                                                                  curve: Curves.ease);
+                                                                            }
+
+                                                                          });
+                                                                          
+                                                                        }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
+                                                                      },
+                                                                      color: COLOR_CYAN,
+                                                                      child: Text('ใช่', style: TextStyle(color: Colors.white),),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              );
+
+                                                            },
+                                                            child:  Text( "ไม่ยืนยัน" ,)
+                                                        )
+                                                            :
+                                                        ElevatedButton(
+                                                            style:  ElevatedButton.styleFrom(
+                                                              primary: Colors.red, // Background color
+                                                            ),
+                                                            onPressed:()  async {
+                                                              showDialog<String>(
+                                                                context: context,
+                                                                builder: (BuildContext context) => AlertDialog(
+                                                                  shape: RoundedRectangleBorder(
+                                                                      borderRadius: BorderRadius.circular(10)
+                                                                  ),
+                                                                  title:  Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
+                                                                  content:  Text('ต้องการยกเลิกรายการยาใช่หรือไม่', style: TextStyle( fontSize: 16),),
+                                                                  actions: <Widget>[
+                                                                    RaisedButton(
+                                                                      onPressed: () => Navigator.pop(context, 'OK'),
+                                                                      color: Colors.red,
+                                                                      child: Text('ไม่ใช่', style: TextStyle(color: Colors.white),),
+                                                                    ),
+                                                                    RaisedButton(
+                                                                      onPressed: () async {
+                                                                        db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(msg.messageId).collection("Orders").doc("${streamSnapshot.data!.docs.first.id}").update({"orderStatus": "pc" }).then((value) {
+                                                                          Navigator.pop(context, 'OK');
+                                                                          SchedulerBinding.instance!.addPostFrameCallback((_){
+                                                                            if(scrollController.hasClients){
+                                                                              scrollController.animateTo(
+                                                                                  scrollController.position.maxScrollExtent,
+                                                                                  duration: const Duration(milliseconds: 100),
+                                                                                  curve: Curves.ease);
+                                                                            }
+
+                                                                          });
+
+                                                                        }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+                                                                      },
+                                                                      color: COLOR_CYAN,
+                                                                      child: Text('ใช่', style: TextStyle(color: Colors.white),),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              );
+
+
+                                                            },
+                                                            child:  Text( "ยกเลิก" ,)
+                                                        ),
+
+                                                        addHorizontalSpace(10),
+
+                                                        Visibility(
+                                                          child:  ElevatedButton(
+                                                            style:  ElevatedButton.styleFrom(
+                                                              primary: Colors.green, // Background color
+                                                            ),
+                                                            child: Text('ยืนยัน'),
+                                                            onPressed:() async {
+
+                                                              Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                      builder: (context) => ConfirmOrder(listOrderdetail: listOrderdetail,advice:advice!) ));
+
+                                                            },
+                                                          ),
+                                                          visible:curentUser_id == advice!.member!.MemberUsername? true : false,
+                                                        ),
+
+
+                                                      ],
+                                                    )
+                                                ],
+                                              )
 
 
                                             ],
-                                          )
-                                        ],
-                                      )
+                                          ),
+                                        );
 
-
-                                    ],
-                                  ),
+                                      }else{
+                                        return SizedBox();
+                                      }
+   
+                                    
+                                }
                                 );
-                              } else if (snapShot.hasError) {
-                                return forLoad_Error(snapShot, themeData);
+                                
+                              
+                              } else if (streamSnapshot.hasError) {
+                                return forLoad_Error(streamSnapshot, themeData);
                               } else {
                                 return SizedBox();
                               }
@@ -1015,6 +1023,9 @@ class _ChatScreenState extends State<ChatScreen> {
                             curve: Curves.ease);
                       }
                     });
+                  }).catchError((error) {
+                    print("Failed to add Message: $error");
+                    buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
                   });
 
 

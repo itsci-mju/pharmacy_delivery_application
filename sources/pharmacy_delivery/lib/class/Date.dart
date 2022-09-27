@@ -43,6 +43,12 @@ class Date {
         year, month+1, dayOfMonth, hourOfDay, minute, second);
   }
 
+  DateTime toDateTime2() {
+    return  DateTime(
+        year, month, dayOfMonth, hourOfDay, minute, second);
+  }
+
+
   factory Date.toDate(DateTime dateTime) {
     return  Date(year: dateTime.year, month :dateTime.month-1, dayOfMonth:dateTime.day, hourOfDay:dateTime.hour, minute:dateTime.minute, second:dateTime.second);
   }
