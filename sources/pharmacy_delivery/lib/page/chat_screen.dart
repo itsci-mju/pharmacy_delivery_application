@@ -25,6 +25,7 @@ import '../api/advice_api.dart';
 import '../class/Address.dart';
 import '../class/Advice.dart';
 import '../class/Cart.dart';
+import '../class/Date.dart';
 import '../class/Member.dart';
 import '../class/Message.dart';
 import '../class/Pharmacist.dart';
@@ -497,24 +498,15 @@ class _ChatScreenState extends State<ChatScreen> {
                               .snapshots(),
                           builder: (context, AsyncSnapshot<QuerySnapshot>  snapShot) {
                              if( snapShot.hasData && snapShot.data!.docs.isNotEmpty) {
-                /*              if (snapShot.hasData && snapShot.data!.docs.isNotEmpty) {
-                                
-                                for()
-                                listMessage = snapShot.data!.docs[0];
-
-                                SchedulerBinding.instance!.addPostFrameCallback((_){
-                                  // scrollController.jumpTo(scrollController.position.maxScrollExtent+70);
-                                  if(scrollController.hasClients){
-                                    scrollController.animateTo(
-                                        scrollController.position.maxScrollExtent,
-                                        duration: const Duration(milliseconds: 100),
-                                        curve: Curves.ease);
-                                  }
-                                });
-
-
-                              }
-*/
+                               SchedulerBinding.instance!.addPostFrameCallback((_){
+                                 // scrollController.jumpTo(scrollController.position.maxScrollExtent+70);
+                                 if(scrollController.hasClients){
+                                   scrollController.animateTo(
+                                       scrollController.position.maxScrollExtent,
+                                       duration: const Duration(milliseconds: 100),
+                                       curve: Curves.ease);
+                                 }
+                               });
                               return ListView.builder(
                                   controller: scrollController,
                                   shrinkWrap: true,
@@ -1003,22 +995,29 @@ class _ChatScreenState extends State<ChatScreen> {
                   setState(() {
                     message.text = message_ctl.text;
                     message.messageType = "text";
+                    message.time = DateTime.now();
                   });
-                  message.time = DateTime.now();
 
-                  db.collection('${advice!.pharmacist!.pharmacistID}')
-                      .doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((documentSnapshot) =>
-                      print("Added message with ID: ${documentSnapshot.id}"));
+                  db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((documentSnapshot) {
+                    print("Added message with ID: ${documentSnapshot.id}");
+                    db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").update({"lastTime": DateTimetoString(message.time!) });
+                    setState(() {
+                      message.text = "";
+                      message_ctl.text = "";
+                    });
 
-                  SchedulerBinding.instance!.addPostFrameCallback((_){
-                    // scrollController.jumpTo(scrollController.position.maxScrollExtent+70);
-                    if(scrollController.hasClients){
-                      scrollController.animateTo(
-                          scrollController.position.maxScrollExtent+70,
-                          duration: const Duration(seconds: 1),
-                          curve: Curves.ease);
-                    }
+                    SchedulerBinding.instance!.addPostFrameCallback((_){
+                      // scrollController.jumpTo(scrollController.position.maxScrollExtent+70);
+                      if(scrollController.hasClients){
+                        scrollController.animateTo(
+                            scrollController.position.maxScrollExtent,
+                            duration: const Duration(seconds: 1),
+                            curve: Curves.ease);
+                      }
+                    });
                   });
+
+
 
                 }else{
                   buildToast("กรุณากรอกข้อความ",Colors.red);

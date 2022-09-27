@@ -86,7 +86,7 @@ class _ListChatState extends State<ListChat> {
                           child:
                      StreamBuilder(
                             stream: db.collection('${pharmacist!.pharmacistID}')
-                               .orderBy("adviceId",descending: true)
+                               .orderBy("lastTime",descending: true)
                                 //.where("adviceId",isEqualTo: "200")
                                 .snapshots(),
                             builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
@@ -103,7 +103,8 @@ class _ListChatState extends State<ListChat> {
                                     String customerId = docSnap.reference.id;
 
                                     return StreamBuilder(
-                                        stream: db.collection('${pharmacist!.pharmacistID}').doc("$customerId").collection("Message").snapshots(),
+                                        stream: db.collection('${pharmacist!.pharmacistID}').doc("$customerId").collection("Message").orderBy("time").snapshots(),
+
                                         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot){
                                           if (streamSnapshot.connectionState == ConnectionState.waiting ) {
                                             return SizedBox();

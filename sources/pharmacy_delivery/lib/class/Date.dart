@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class Date {
 
   int year;
@@ -61,4 +63,11 @@ class Date {
       second: int.parse(t[2]),
     );
   }
+
+
+}
+String DateTimetoString(DateTime time) {
+  DateTime t = DateTime(time.year+543, time.month, time.day, time.hour, time.minute, time.second);
+  return DateFormat('yyyy-MM-dd HH:mm:ss').format(t );
+
 }
