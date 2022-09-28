@@ -54,6 +54,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Advice? advice;
   Address? address;
   final db =FirebaseFirestore.instance;
+  bool hasOrder= false;
 
 
 
@@ -394,22 +395,13 @@ class _ChatScreenState extends State<ChatScreen> {
               )
                   : IconButton(
                 onPressed: () {
-                  if(advice!.orders==null ){
+                  if(hasOrder==false ){
                     Navigator.push(context,
                         MaterialPageRoute(
                             builder: (context) => SearchMedicine(
                               advice: advice!, shipping: shipping, recipient: message.recipient!, address: address ,
                             )));
                   }else{
-                    DateTime now = DateTime(DateTime.now().year+543, DateTime.now().month,DateTime.now().day,DateTime.now().hour,DateTime.now().minute,DateTime.now().second,DateTime.now().millisecond);
-                    DateTime limitTime = advice!.orders!.orderDate!.add(Duration(minutes: 10));
-                    if((now.isAfter(limitTime) && advice!.orders!.orderStatus=="wcf")){
-                      Navigator.push(context,
-                          MaterialPageRoute(
-                              builder: (context) => SearchMedicine(
-                                advice: advice!, shipping: shipping, recipient: message.recipient!, address: address ,
-                              )));
-                    }else{
                       showDialog<String>(
                         context: context,
                         builder: (BuildContext context) => AlertDialog(
@@ -417,7 +409,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               borderRadius: BorderRadius.circular(10)
                           ),
                           title:  Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
-                          content:  Text(advice!.orders!.orderStatus=="cf"? 'ลูกค้ายืนยันรายการยาเรียบร้อยแล้ว' : 'กรุณายกเลิกรายการยาล่าสุดก่อนเพิ่มรายการยาใหม่', style: TextStyle( fontSize: 16),),
+                          content:  Text( 'มีการเพิ่มรายการยาเรียบร้อยแล้ว', style: TextStyle( fontSize: 16),),
                           actions: <Widget>[
                             RaisedButton(
                               onPressed: () => Navigator.pop(context, 'OK'),
@@ -429,9 +421,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       );
                     }
 
-                  }
-
-                },
+                  },
                 icon: Icon(
                   Icons.medical_services,
                   size: 30,
@@ -616,6 +606,13 @@ class _ChatScreenState extends State<ChatScreen> {
                                         DateTime now = DateTime(DateTime.now().year+543, DateTime.now().month,DateTime.now().day,DateTime.now().hour,DateTime.now().minute,DateTime.now().second,DateTime.now().millisecond);
 
                                         DateTime limitTime = orders.orderDate!.add(Duration(minutes: 10));
+
+                                        if( (now.isBefore(limitTime) && orders.orderStatus=="wcf") ||(orders.orderStatus=="cf" ) ) {
+                                          hasOrder =true;
+                                        }else{
+                                          hasOrder =false;
+                                        }
+                                        print(hasOrder);
 
                                         bool isEnd=false;
                                         SchedulerBinding.instance!.addPostFrameCallback((_){

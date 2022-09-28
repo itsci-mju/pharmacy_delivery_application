@@ -28,12 +28,12 @@ import 'chat_screen.dart';
 
 class ConfirmOrder extends StatefulWidget {
   final List<OrderDetail>? listOrderdetail;
-  final Advice? advice;
+  final Advice advice;
   final String? messageId;
   final String? ordersId;
 
 
-  const ConfirmOrder({Key? key,  this.listOrderdetail,  this.advice, this.messageId, this.ordersId, }) : super(key: key);
+  const ConfirmOrder({Key? key,  this.listOrderdetail,  required this.advice, this.messageId, this.ordersId, }) : super(key: key);
 
   @override
   State<ConfirmOrder> createState() => _ConfirmOrderState();
@@ -50,6 +50,9 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
 
   double limitprice=0;
 
+  Orders? orders;
+  Advice? advice;
+
   Map<String, dynamic>? paymentIntentData;
 
   Future checkShowCoupon(String drugstoreId) async {
@@ -64,9 +67,11 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
   @override
   void initState() {
     super.initState();
-    checkShowCoupon(widget.advice!.pharmacist!.drugstore!.drugstoreID!);
+    checkShowCoupon(widget.advice.pharmacist!.drugstore!.drugstoreID!);
     setState(() {
       total =  widget.listOrderdetail![0].orders!.totalPrice! - discount;
+       orders =  widget.listOrderdetail![0].orders;
+       advice = widget.advice;
     });
   }
 
@@ -77,8 +82,6 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
     final double padding = 10;
     final sidePadding = EdgeInsets.symmetric(horizontal: padding,vertical: 5);
     List<OrderDetail> listOrderDetail = widget.listOrderdetail!;
-    Orders? orders =  widget.listOrderdetail![0].orders;
-    Advice? advice = widget.advice;
 
     return WillPopScope(
       onWillPop: () {
@@ -121,75 +124,75 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Padding(
-                    padding: sidePadding,
-                    child:
-                    widget.listOrderdetail![0].orders!.address !=null ?
+                      padding: sidePadding,
+                      child:
+                      widget.listOrderdetail![0].orders!.address !=null ?
                       Column(
-                      //mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: [
-                            Icon(Icons.location_pin,size: 25,),
-                            addHorizontalSpace(5),
-                            Text(
-                              "ที่อยู่ในการจัดส่ง",
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.w600,
+                        //mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: [
+                              Icon(Icons.location_pin,size: 25,),
+                              addHorizontalSpace(5),
+                              Text(
+                                "ที่อยู่ในการจัดส่ง",
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Divider(
-                          color: Colors.grey,
-                          thickness: 1,
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.listOrderdetail![0].orders!.address!.name!,
-                              style: TextStyle(
-                                color: Colors.black54,fontSize: 14.0,),
-                            ),
-                            Text(
-                              widget.listOrderdetail![0].orders!.address!.tel!,
-                              style: TextStyle(
-                                color: Colors.black54,fontSize: 14.0,),
-                            ),
-                            Text(
-                              widget.listOrderdetail![0].orders!.address!.addressDetail! ,
-                              style: TextStyle(
-                                color: Colors.black54,fontSize: 14.0,),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                          Divider(
+                            color: Colors.grey,
+                            thickness: 1,
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.listOrderdetail![0].orders!.address!.name!,
+                                style: TextStyle(
+                                  color: Colors.black54,fontSize: 14.0,),
+                              ),
+                              Text(
+                                widget.listOrderdetail![0].orders!.address!.tel!,
+                                style: TextStyle(
+                                  color: Colors.black54,fontSize: 14.0,),
+                              ),
+                              Text(
+                                widget.listOrderdetail![0].orders!.address!.addressDetail! ,
+                                style: TextStyle(
+                                  color: Colors.black54,fontSize: 14.0,),
+                              ),
+                            ],
+                          ),
 
 
-                      ],
-                    )
+                        ],
+                      )
                           :
-                         Column(
-                             crossAxisAlignment: CrossAxisAlignment.start,
-                             children: <Widget>[
-                               Row(
-                                 children: [
-                                   Icon(Icons.location_pin,size: 25,),
-                                   addHorizontalSpace(5),
-                                   Text(
-                                     "รับยาที่ร้าน",
-                                     style: TextStyle(
-                                       color: Colors.black87,
-                                       fontSize: 16.0,
-                                       fontWeight: FontWeight.w600,
-                                     ),
-                                   ),
-                                 ],
-                               ),
-                               ]
-                         )
+                      Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              children: [
+                                Icon(Icons.location_pin,size: 25,),
+                                addHorizontalSpace(5),
+                                Text(
+                                  "รับยาที่ร้าน",
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ]
+                      )
 
                   ),
                 ),
@@ -262,7 +265,7 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                                             Container(
                                               width: 240,
                                               child: Text(
-                                                  od.medicine!.medName!,
+                                                od.medicine!.medName!,
                                                 style: Theme.of(context).textTheme.bodyText1,
                                                 overflow: TextOverflow.ellipsis,
                                                 maxLines: 1,
@@ -270,15 +273,15 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                                             ),
                                             SizedBox(height: 5),
 
-                                           if (od.note != null)
-                                             Text(
-                                              od.note.toString(),
-                                              style: TextStyle(
-                                                color: Colors.grey,
+                                            if (od.note != null)
+                                              Text(
+                                                od.note.toString(),
+                                                style: TextStyle(
+                                                  color: Colors.grey,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
 
                                             Container(
                                               //padding: EdgeInsets.only(right: 15),
@@ -317,9 +320,9 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                                   ),
                                   if (od != listOrderDetail[listOrderDetail.length-1])
                                     Divider(
-                                    color: Colors.grey,
-                                    thickness: 0.5,
-                                  ) ,
+                                      color: Colors.grey,
+                                      thickness: 0.5,
+                                    ) ,
                                 ],
                               );
                             }),
@@ -333,119 +336,119 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
               ),
 
               if(limitprice!=0)
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 5),
-                child:  Container(
-                  padding: EdgeInsets.all(5),
-                  margin: EdgeInsets.all(5),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color : Colors.white,
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Padding(
-                    padding: sidePadding,
-                    child: Form(
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                      key: _formKey,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            "โค้ดส่วนลด",
-                            style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          addHorizontalSpace(40),
-                          Expanded(
-                            child: TextFormField(
-                              validator: (value) {
-                                RegExp regex = RegExp(r'^[A-Za-z0-9]{1,10}$');
-                                if ( !regex.hasMatch(value!) && value.trim()!="" )
-                                  return  "* กรุณากรอกโค้ดส่วนลดให้ถูกต้อง";
-                                else
-                                  return null;
-                              },
-                              onChanged: (value){
-                                setState(() {
-                                  couponName = value;
-                                });
-                              },
-                              inputFormatters: [
-                                LengthLimitingTextInputFormatter(10),
-                                FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]'),),
-                              ],
-                              controller: coupon_ctl,
-                              decoration: InputDecoration(
-                                errorStyle: TextStyle(height: 1),
-                                isDense: true,
-                                contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                                hintText: "กรอกโค้ดส่วนลด",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(0),
-                                ),
-                                fillColor: Colors.white,
-                                filled: true,
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: COLOR_CYAN),
-                                  borderRadius: BorderRadius.circular(0),
-                                ),
-                                errorBorder: new OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.red),
-                                  borderRadius: BorderRadius.circular(0),
-                                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 5),
+                  child:  Container(
+                    padding: EdgeInsets.all(5),
+                    margin: EdgeInsets.all(5),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color : Colors.white,
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Padding(
+                      padding: sidePadding,
+                      child: Form(
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        key: _formKey,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(
+                              "โค้ดส่วนลด",
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.w600,
                               ),
-                              style: TextStyle( fontSize: 14,color: Colors.black),
                             ),
-                          ),
-                          addHorizontalSpace(10),
-                          ElevatedButton(
-                            style:  ElevatedButton.styleFrom(
-                              primary: COLOR_CYAN, // Background color
+                            addHorizontalSpace(40),
+                            Expanded(
+                              child: TextFormField(
+                                validator: (value) {
+                                  RegExp regex = RegExp(r'^[A-Za-z0-9]{1,10}$');
+                                  if ( !regex.hasMatch(value!) && value.trim()!="" )
+                                    return  "* กรุณากรอกโค้ดส่วนลดให้ถูกต้อง";
+                                  else
+                                    return null;
+                                },
+                                onChanged: (value){
+                                  setState(() {
+                                    couponName = value;
+                                  });
+                                },
+                                inputFormatters: [
+                                  LengthLimitingTextInputFormatter(10),
+                                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]'),),
+                                ],
+                                controller: coupon_ctl,
+                                decoration: InputDecoration(
+                                  errorStyle: TextStyle(height: 1),
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                                  hintText: "กรอกโค้ดส่วนลด",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(0),
+                                  ),
+                                  fillColor: Colors.white,
+                                  filled: true,
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: COLOR_CYAN),
+                                    borderRadius: BorderRadius.circular(0),
+                                  ),
+                                  errorBorder: new OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.red),
+                                    borderRadius: BorderRadius.circular(0),
+                                  ),
+                                ),
+                                style: TextStyle( fontSize: 14,color: Colors.black),
+                              ),
                             ),
-                            onPressed:
-                            couponName=="" ||couponName ==null ?
-                                null
-                                    :
-                                () async {
-                              if (_formKey.currentState!.validate()){
-                                FocusScope.of(context).unfocus();
-                                final coupon = await CouponApi.checkCoupon(advice.pharmacist!.drugstore!.drugstoreID!, coupon_ctl.text);
-                                if(coupon!=null){
-                                  if( orders!.subtotalPrice! >= coupon.minimumPrice){
-                                    setState(() {
-                                      orders.coupon = coupon;
+                            addHorizontalSpace(10),
+                            ElevatedButton(
+                              style:  ElevatedButton.styleFrom(
+                                primary: COLOR_CYAN, // Background color
+                              ),
+                              onPressed:
+                              couponName=="" ||couponName ==null ?
+                              null
+                                  :
+                                  () async {
+                                if (_formKey.currentState!.validate()){
+                                  FocusScope.of(context).unfocus();
+                                  final coupon = await CouponApi.checkCoupon(advice!.pharmacist!.drugstore!.drugstoreID!, coupon_ctl.text);
+                                  if(coupon!=null){
+                                    if( orders!.subtotalPrice! >= coupon.minimumPrice){
+                                      setState(() {
+                                        orders!.coupon = coupon;
 
-                                      discount = coupon.discount!;
-                                      total = orders.totalPrice! - discount;
-                                      // orders!.totalPrice =  orders.totalPrice! - discount;
-                                      coupon_ctl.text="";
-                                      couponName="";
+                                        discount = coupon.discount!;
+                                        total = orders!.totalPrice! - discount;
+                                        // orders!.totalPrice =  orders.totalPrice! - discount;
+                                        coupon_ctl.text="";
+                                        couponName="";
 
-                                      buildToast("ใช้โค้ดส่วนลดสำเร็จ", Colors.green);
-                                    });
+                                        buildToast("ใช้โค้ดส่วนลดสำเร็จ", Colors.green);
+                                      });
+                                    }else{
+                                      buildToast("ไม่สามารถใช้โค้ดส่วนลดได้", Colors.orange);
+                                    }
+
                                   }else{
-                                    buildToast("ไม่สามารถใช้โค้ดส่วนลดได้", Colors.orange);
+                                    buildToast("โค้ดไม่ถูกต้อง หรือโค้ดถูกใช้ครบแล้ว", Colors.red);
                                   }
-
-                                }else{
-                                  buildToast("โค้ดไม่ถูกต้อง หรือโค้ดถูกใช้ครบแล้ว", Colors.red);
                                 }
-                              }
-                            },
-                            child: Text('ใช้โค้ด'),
-                          )
+                              },
+                              child: Text('ใช้โค้ด'),
+                            )
 
 
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 5),
@@ -479,24 +482,24 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                             Text("ค่าจัดส่ง",
                               style: Theme.of(context).textTheme.bodyText1,
                             ),
-                            Text(formatCurrency(orders.shippingCost! ),
+                            Text(formatCurrency(orders!.shippingCost! ),
                               style: Theme.of(context).textTheme.bodyText1,
                             ),
                           ],
                         ),
 
                         if(limitprice!=0)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(  orders.coupon!=null? "ส่วนลด ( ${orders.coupon!.couponName!} )" : "ส่วนลด",
-                              style: Theme.of(context).textTheme.bodyText1,
-                            ),
-                            Text(formatCurrency(discount ),
-                              style: Theme.of(context).textTheme.bodyText1,
-                            ),
-                          ],
-                        ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(  orders!.coupon!=null? "ส่วนลด ( ${orders!.coupon!.couponName!} )" : "ส่วนลด",
+                                style: Theme.of(context).textTheme.bodyText1,
+                              ),
+                              Text(formatCurrency(discount ),
+                                style: Theme.of(context).textTheme.bodyText1,
+                              ),
+                            ],
+                          ),
 
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -561,78 +564,88 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                           backgroundColor: COLOR_CYAN,
                         ),
                         onPressed:() async {
-                          double? totalPrice = total==0? orders.totalPrice : total ;
-                          String? couponName = orders.coupon!=null? orders.coupon!.couponName : "";
-                          orders.totalPrice = totalPrice!;
+                          double? totalPrice = total==0? orders!.totalPrice : total ;
+                          String? couponName = orders!.coupon!=null? orders!.coupon!.couponName : "";
+                          orders!.totalPrice = totalPrice!;
 
-                          db.collection('${advice.pharmacist!.pharmacistID}').doc("${advice.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": "cf" }).then((value) async {
-                            final confirmOrder = await OrdersApi.confirmOrder(orders, couponName!);
-                            if(confirmOrder!=0){
-                              Orders orders = confirmOrder;
-                              await AdviceApi.updateOrderId( advice,  orders);
-                              final addOrdetail = await OrderDetailApi.addOrderDetail(listOrderDetail, orders, advice.pharmacist!.drugstore!.drugstoreID!);
-                              showDialog<String>(context: context,barrierDismissible: false, builder: (BuildContext context) => WillPopScope(
-                                onWillPop: () {
-                                  return Future.value(false);
-                                },
-                                child: Dialog(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)
-                                    ),
-                                    child: Stack(
-                                      overflow: Overflow.visible,
-                                      alignment: Alignment.topCenter,
-                                      children: [
-                                        Container(
-                                          padding: EdgeInsets.all(10),
-                                          height: size.height * 0.3,
-                                          child: Column(
-                                            children: [
-                                              Icon(Icons.check_circle, color: Colors.green, size: 80,),
-                                              addVerticalSpace(10),
-                                              Text('ยืนยันคำสั่งซื้อสำเร็จ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
-                                              addVerticalSpace(20),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                children: [
-                                                  RaisedButton.icon(
-                                                    color: Colors.orange,
-                                                    icon: Icon(Icons.arrow_back, color: Colors.white,),
-                                                    label: Text('กลับหน้าแชท', style: TextStyle(color: Colors.white),),
-                                                    onPressed: () async {
-                                                      Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  ChatScreen(advice: advice,shipping: "")));
+                          final confirmOrder = await OrdersApi.confirmOrder(orders!, couponName!);
+                          if(confirmOrder!=0){
+                           // Orders orders = confirmOrder;
+                            await AdviceApi.updateOrderId( advice!,  confirmOrder!);
+                            setState(() {
+                              orders = confirmOrder;
+                              advice!.orders= confirmOrder;
+                            });
+                            final addOrdetail = await OrderDetailApi.addOrderDetail(listOrderDetail, orders!, advice!.pharmacist!.drugstore!.drugstoreID!);
+                            if(addOrdetail!=0){
+                              db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": "cf" }).then((value) async {
+                                showDialog<String>(context: context,barrierDismissible: false, builder: (BuildContext context) => WillPopScope(
+                                  onWillPop: () {
+                                    return Future.value(false);
+                                  },
+                                  child: Dialog(
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10)
+                                      ),
+                                      child: Stack(
+                                        overflow: Overflow.visible,
+                                        alignment: Alignment.topCenter,
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.all(10),
+                                            height: size.height * 0.4,
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.check_circle, color: Colors.green, size: 80,),
+                                                addVerticalSpace(10),
+                                                Text('ยืนยันคำสั่งซื้อสำเร็จ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
+                                                addVerticalSpace(20),
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                  children: [
+                                                    RaisedButton.icon(
+                                                      color: Colors.orange,
+                                                      icon: Icon(Icons.arrow_back, color: Colors.white,),
+                                                      label: Text('กลับหน้าแชท', style: TextStyle(color: Colors.white),),
+                                                      onPressed: () async {
+                                                        print("oddddd ${advice!.orders!.orderId}");
+                                                        Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                                builder: (context) =>
+                                                                    ChatScreen(advice: advice!,shipping: "")));
 
-                                                    },
-                                                  ),
-                                                  RaisedButton.icon(
-                                                    color: Colors.cyan,
-                                                    icon: Icon(Icons.payment, color: Colors.white,),
-                                                    label: Text('ชำระเงิน', style: TextStyle(color: Colors.white),),
-                                                    onPressed: ()  async {
-                                                      await makePayment(total.toInt().toString());
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                                      },
+                                                    ),
+                                                    RaisedButton.icon(
+                                                      color: Colors.cyan,
+                                                      icon: Icon(Icons.payment, color: Colors.white,),
+                                                      label: Text('ชำระเงิน', style: TextStyle(color: Colors.white),),
+                                                      onPressed: ()  async {
+                                                        await makePayment(total.toInt().toString());
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
 
-                                      ],
-                                    )
-                                ),
-                              ));
-
+                                        ],
+                                      )
+                                  ),
+                                ));
+                              }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
                             }else{
                               buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
-
                             }
 
-                          }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+                          }else{
+                            buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
+
+                          }
+
 
 
                         },
@@ -691,8 +704,13 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
 
         String receiptId = paymentIntentData!['created'].toString();
 
-        Advice new_advice = await OrdersApi.payOrders(widget.advice!, receiptId);
+        Advice new_advice = await OrdersApi.payOrders(advice!, receiptId);
         if(new_advice!=0){
+
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ViewReceipt(advice: new_advice,back: 0, )));
 
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:  Row(
             children: const [
@@ -702,10 +720,7 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
           ),));
 
 
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ViewReceipt(advice: new_advice,back: 0, )));
+
 
         }else{
           showDialog(
