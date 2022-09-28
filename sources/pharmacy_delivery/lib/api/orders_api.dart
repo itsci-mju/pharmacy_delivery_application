@@ -51,7 +51,7 @@ class OrdersApi{
     }
   }
 
-
+/*
   static addOrders(int sumQuantity, double subtotalPrice, double shippingCost, Address? address ) async {
 
     final response = await http.post(Uri.parse(URLRequest.URL_orders_add),
@@ -72,6 +72,27 @@ class OrdersApi{
       return 0;
     }
   }
+*/
+  static confirmOrder(Orders orders, String couponName,  ) async {
+    final response = await http.post(Uri.parse(URLRequest.URL_orders_confirm),
+        body: jsonEncode({"orders":jsonEncode(orders.toJson()), "couponName":couponName, }),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json"
+        });
+    print("confirmOrder : "+response.body.toString());
+
+    Map<String, dynamic> map = json.decode(response.body);
+    if (response.statusCode == 200 && map["result"] != "0") {
+      dynamic result = map["result"];
+      Orders orders = Orders.fromJson(result);
+      return orders;
+    } else {
+      return 0;
+      throw Exception();
+    }
+  }
+
 
   static pCancelOrder(String orderId,Advice advice) async {
     final response = await http.post(Uri.parse(URLRequest.URL_orders_pCancel),
@@ -91,23 +112,7 @@ class OrdersApi{
     }
   }
 
-  static confirmOrder(String orderId, String couponName, double totalPrice) async {
-    final response = await http.post(Uri.parse(URLRequest.URL_orders_confirm),
-        body: jsonEncode({"orderId":orderId, "couponName":couponName, "totalPrice":totalPrice }),
-        headers: {
-          "Accept": "application/json",
-          "content-type": "application/json"
-        });
-    print("confirmOrder : "+response.body.toString());
 
-    Map<String, dynamic> map = json.decode(response.body);
-    if (response.statusCode == 200 && map["result"] != "0") {
-      return 1;
-    } else {
-      return 0;
-      throw Exception();
-    }
-  }
 
   static cancelOrder_member(Orders orders,String drugstoreID) async {
     final response = await http.post(Uri.parse(URLRequest.URL_orders_cancel_member),

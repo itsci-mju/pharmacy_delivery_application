@@ -1,5 +1,5 @@
 class URLRequest {
-  static const String URL = "http://172.16.1.17:8081/PharmacyDelivery";
+  static const String URL = "http://172.16.1.77:8081/PharmacyDelivery";
   //static const String URL = "http://10.15.16.165:8081/PharmacyDelivery";
 
   static const String URL_list_drugstore = URL+"/drugstore/list";

@@ -10,11 +10,11 @@ import '../class/Orders.dart';
 import '../utils/URLRequest.dart';
 
 class OrderDetailApi{
-  static addOrderDetail(List<Cart> cart, Orders orders, String drugstoreId ) async {
+  static addOrderDetail(List<OrderDetail> listOD, Orders orders, String drugstoreId ) async {
     List<OrderDetail>? listOrderDetail;
     bool test = false;
-    for(Cart c in cart) {
-      OrderDetail od = OrderDetail(orders: orders,medicine: c.medicine,quantity: c.quantity,sumprice: c.sumprice,note: c.note );
+    for(OrderDetail od in listOD) {
+      od.orders= orders;
       final response = await http.post(Uri.parse(URLRequest.URL_order_detail_add),
           body: jsonEncode({"orderDetail": jsonEncode(od.toJson()),"drugstoreId":drugstoreId}),
           headers: {

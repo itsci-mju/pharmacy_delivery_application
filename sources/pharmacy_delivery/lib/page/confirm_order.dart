@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:pharmacy_delivery/api/address_api.dart';
+import 'package:pharmacy_delivery/api/advice_api.dart';
 import 'package:pharmacy_delivery/api/coupon_api.dart';
 import 'package:pharmacy_delivery/api/drugstores_api.dart';
 import 'package:pharmacy_delivery/api/orders_api.dart';
@@ -15,6 +17,7 @@ import 'package:pharmacy_delivery/page/view_receipt.dart';
 import 'package:pharmacy_delivery/utils/custom_functions.dart';
 import 'package:pharmacy_delivery/utils/widget_functions.dart';
 
+import '../api/orderDetail_api.dart';
 import '../class/Address.dart';
 import '../class/Coupon.dart';
 import '../class/Drugstore.dart';
@@ -26,8 +29,11 @@ import 'chat_screen.dart';
 class ConfirmOrder extends StatefulWidget {
   final List<OrderDetail>? listOrderdetail;
   final Advice? advice;
+  final String? messageId;
+  final String? ordersId;
 
-  const ConfirmOrder({Key? key,  this.listOrderdetail,  this.advice, }) : super(key: key);
+
+  const ConfirmOrder({Key? key,  this.listOrderdetail,  this.advice, this.messageId, this.ordersId, }) : super(key: key);
 
   @override
   State<ConfirmOrder> createState() => _ConfirmOrderState();
@@ -37,6 +43,7 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
   String? couponName ;
   TextEditingController coupon_ctl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final db =FirebaseFirestore.instance;
 
   double discount = 0;
   double total = 0;
@@ -556,72 +563,78 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                         onPressed:() async {
                           double? totalPrice = total==0? orders.totalPrice : total ;
                           String? couponName = orders.coupon!=null? orders.coupon!.couponName : "";
+                          orders.totalPrice = totalPrice!;
 
-                        //  db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(msg.messageId).collection("Orders").doc("${streamSnapshot.data!.docs.first.id}").update({"orderStatus": "cf" })
+                          db.collection('${advice.pharmacist!.pharmacistID}').doc("${advice.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": "cf" }).then((value) async {
+                            final confirmOrder = await OrdersApi.confirmOrder(orders, couponName!);
+                            if(confirmOrder!=0){
+                              Orders orders = confirmOrder;
+                              await AdviceApi.updateOrderId( advice,  orders);
+                              final addOrdetail = await OrderDetailApi.addOrderDetail(listOrderDetail, orders, advice.pharmacist!.drugstore!.drugstoreID!);
+                              showDialog<String>(context: context,barrierDismissible: false, builder: (BuildContext context) => WillPopScope(
+                                onWillPop: () {
+                                  return Future.value(false);
+                                },
+                                child: Dialog(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10)
+                                    ),
+                                    child: Stack(
+                                      overflow: Overflow.visible,
+                                      alignment: Alignment.topCenter,
+                                      children: [
+                                        Container(
+                                          padding: EdgeInsets.all(10),
+                                          height: size.height * 0.3,
+                                          child: Column(
+                                            children: [
+                                              Icon(Icons.check_circle, color: Colors.green, size: 80,),
+                                              addVerticalSpace(10),
+                                              Text('ยืนยันคำสั่งซื้อสำเร็จ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
+                                              addVerticalSpace(20),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                children: [
+                                                  RaisedButton.icon(
+                                                    color: Colors.orange,
+                                                    icon: Icon(Icons.arrow_back, color: Colors.white,),
+                                                    label: Text('กลับหน้าแชท', style: TextStyle(color: Colors.white),),
+                                                    onPressed: () async {
+                                                      Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  ChatScreen(advice: advice,shipping: "")));
 
-                          final confirmOrder = await OrdersApi.confirmOrder(orders.orderId!, couponName!, totalPrice!);
-                          if(confirmOrder!=0){
-                            advice.orders!.orderStatus ="cf";
-                            showDialog<String>(context: context,barrierDismissible: false, builder: (BuildContext context) => WillPopScope(
-                              onWillPop: () {
-                                return Future.value(false);
-                              },
-                              child: Dialog(
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)
-                                  ),
-                                  child: Stack(
-                                    overflow: Overflow.visible,
-                                    alignment: Alignment.topCenter,
-                                    children: [
-                                      Container(
-                                        padding: EdgeInsets.all(10),
-                                        height: size.height * 0.3,
-                                        child: Column(
-                                          children: [
-                                            Icon(Icons.check_circle, color: Colors.green, size: 80,),
-                                            addVerticalSpace(10),
-                                            Text('ยืนยันคำสั่งซื้อสำเร็จ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
-                                            addVerticalSpace(20),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                              children: [
-                                                RaisedButton.icon(
-                                                  color: Colors.orange,
-                                                  icon: Icon(Icons.arrow_back, color: Colors.white,),
-                                                  label: Text('กลับหน้าแชท', style: TextStyle(color: Colors.white),),
-                                                  onPressed: () async {
-                                                    Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                ChatScreen(advice: advice,shipping: "")));
-
-                                                  },
-                                                ),
-                                                RaisedButton.icon(
-                                                  color: Colors.cyan,
-                                                  icon: Icon(Icons.payment, color: Colors.white,),
-                                                  label: Text('ชำระเงิน', style: TextStyle(color: Colors.white),),
-                                                  onPressed: ()  async {
-                                                    await makePayment(total.toInt().toString());
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                                    },
+                                                  ),
+                                                  RaisedButton.icon(
+                                                    color: Colors.cyan,
+                                                    icon: Icon(Icons.payment, color: Colors.white,),
+                                                    label: Text('ชำระเงิน', style: TextStyle(color: Colors.white),),
+                                                    onPressed: ()  async {
+                                                      await makePayment(total.toInt().toString());
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
 
-                                    ],
-                                  )
-                              ),
-                            ));
+                                      ],
+                                    )
+                                ),
+                              ));
 
-                          }else{
-                            buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
+                            }else{
+                              buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
 
-                          }
+                            }
+
+                          }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
+
                         },
                         child: Text(
                           "ยืนยันคำสั่งซื้อ",

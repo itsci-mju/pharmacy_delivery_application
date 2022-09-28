@@ -615,7 +615,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                         DateTime now = DateTime(DateTime.now().year+543, DateTime.now().month,DateTime.now().day,DateTime.now().hour,DateTime.now().minute,DateTime.now().second,DateTime.now().millisecond);
 
-                                        DateTime limitTime = orders.orderDate!.add(Duration(minutes: 2));
+                                        DateTime limitTime = orders.orderDate!.add(Duration(minutes: 10));
 
                                         bool isEnd=false;
                                         SchedulerBinding.instance!.addPostFrameCallback((_){
@@ -894,7 +894,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                               Navigator.push(
                                                                   context,
                                                                   MaterialPageRoute(
-                                                                      builder: (context) => ConfirmOrder(listOrderdetail: listOrderdetail,advice:advice!) ));
+                                                                      builder: (context) => ConfirmOrder(listOrderdetail: listOrderdetail,advice:advice!, messageId: msg.messageId, ordersId: streamSnapshot.data!.docs.first.id,) ));
 
                                                             },
                                                           ),
