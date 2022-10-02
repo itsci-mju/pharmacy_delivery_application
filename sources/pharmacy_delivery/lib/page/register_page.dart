@@ -289,7 +289,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                                               alignment: Alignment.topCenter,
                                                               children: [
                                                                 Container(
-                                                                  height: size.height * 0.3,
+                                                                  height: size.height * 0.35,
                                                                   child: Padding(
                                                                     padding: const EdgeInsets.fromLTRB(10, 70, 10, 10),
                                                                     child: Column(
