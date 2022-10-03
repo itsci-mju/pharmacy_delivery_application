@@ -34,9 +34,10 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
 
   TabBar get _tabBar => TabBar(
         labelStyle: TextStyle(fontSize: 16),
-        isScrollable: false,
+        isScrollable: true,
         indicatorColor: Color(0xFD00BCD4),
         tabs: [
+          Tab(text :"รอชำระเงิน"),
           Tab(text: "รับที่ร้าน"), //store
           Tab(text: "ที่ต้องจัดส่ง"), //wt
           Tab(text: "จัดส่งแล้ว"), //T
@@ -62,7 +63,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
         //return Future.value(true);
       },
       child: DefaultTabController(
-        length: 3,
+        length: 4,
         initialIndex: index ?? 0,
         child: Scaffold(
           appBar: AppBar(
@@ -87,6 +88,116 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
                   child: TabBarView(
                 physics: BouncingScrollPhysics(),
                 children: [
+/*----------------- รอชำระเงิน -------------------------*/
+                  Container(
+                    width: size.width,
+                    height: size.height,
+                    child: Stack(
+                      children: [
+                        FutureBuilder<List<Advice>>(
+                            future:  OrdersApi.phar_listOrders_status("cf",pharmacist!.pharmacistID?? ""),
+                            builder: (context, snapShot) {
+                              if (snapShot.connectionState == ConnectionState.waiting) {
+                                return forLoad_Data(  Theme.of(context));
+                              } else if (snapShot.hasError) {
+                                return forLoad_Error(snapShot,  Theme.of(context));
+                              } else if (snapShot.hasData && snapShot.data!.isNotEmpty && snapShot.connectionState == ConnectionState.done) {
+                                return ListView.builder(
+                                    shrinkWrap: true,
+                                    // reverse: true,
+                                    padding: EdgeInsets.only(top: 5),
+                                    itemCount: snapShot.data!.length,
+                                    itemBuilder: (BuildContext context, int index) {
+                                      Advice advice = snapShot.data![index];
+                                      Orders orders = advice.orders!;
+                                      return GestureDetector(
+                                        onTap:() {
+                                          Navigator.push(context,  MaterialPageRoute(builder: (context) => ViewOrderDetail(advice: advice,tab_index: 0,backPage: "ListPayment"))
+                                          );
+                                        },
+                                        child: Padding(
+                                          padding:EdgeInsets.symmetric(horizontal: 5),
+                                          child:  Container(
+                                            padding: EdgeInsets.all(5),
+                                            margin: EdgeInsets.all(5),
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                              color : Colors.white,
+                                              borderRadius: BorderRadius.circular(10.0),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.3),
+                                                  spreadRadius: 5,
+                                                  blurRadius: 10,
+                                                  offset: Offset(0, 3), // changes position of shadow
+                                                ),
+                                              ],
+                                            ),
+
+                                            child: Padding(
+                                              padding: sidePadding,
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Icon(Icons.person,size: 25,),
+                                                          addHorizontalSpace(5),
+                                                          Text(
+                                                            advice.member!.MemberUsername!,
+                                                            style: TextStyle(
+                                                              color: Colors.black87,
+                                                              fontSize: 16.0,
+                                                              fontWeight: FontWeight.w600,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      Text(
+                                                        "รอชำระเงิน",
+                                                        style: TextStyle(
+                                                          color: COLOR_CYAN,fontSize: 14.0,),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Divider(
+                                                    color: Colors.grey,
+                                                    thickness: 1,
+                                                  ),
+                                                  Text(
+                                                    "หมายเลขคำสั่งซื้อ : ${orders.orderId}",
+                                                    style: TextStyle(
+                                                      color: Colors.black54,fontSize: 14.0,),
+                                                  ),
+                                                  Text(
+                                                    "วันที่สั่งซื้อ : ${DateFormat('dd-MM-yyyy HH:mm').format(orders.orderDate!)} ",
+                                                    style: TextStyle(
+                                                      color: Colors.black54,fontSize: 14.0,),
+                                                  ),
+
+
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                );
+                              } else {
+                                return for_NoOrders( Theme.of(context));
+                              }
+
+
+                            }
+                        )
+                      ],
+                    ),
+                  ),
+
 /*----------------- รับที่ร้าน -------------------------*/
                   Container(
                     width: size.width,
@@ -111,7 +222,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
                                       Orders orders = advice.orders!;
                                       return GestureDetector(
                                         onTap:() {
-                                          Navigator.push(context,  MaterialPageRoute(builder: (context) => ViewOrderDetail(advice: advice,tab_index: 0,backPage: "ListPayment"))
+                                          Navigator.push(context,  MaterialPageRoute(builder: (context) => ViewOrderDetail(advice: advice,tab_index: 1,backPage: "ListPayment"))
                                           );
                                         },
                                         child: Padding(
@@ -225,7 +336,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
                                       Orders orders = advice.orders!;
                                       return GestureDetector(
                                         onTap:() {
-                                          Navigator.push(context,  MaterialPageRoute(builder: (context) => ViewOrderDetail(advice: advice,tab_index: 1,backPage: "ListPayment"))
+                                          Navigator.push(context,  MaterialPageRoute(builder: (context) => ViewOrderDetail(advice: advice,tab_index: 2,backPage: "ListPayment"))
                                           );
                                         },
                                         child: Padding(
@@ -343,7 +454,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
                                             Orders orders = advice.orders!;
                                             return GestureDetector(
                                               onTap:() {
-                                                Navigator.push(context,  MaterialPageRoute(builder: (context) => ViewOrderDetail(advice: advice,tab_index: 2,backPage: "ListPayment"))
+                                                Navigator.push(context,  MaterialPageRoute(builder: (context) => ViewOrderDetail(advice: advice,tab_index: 3,backPage: "ListPayment"))
                                                 );
                                               },
                                               child: Padding(

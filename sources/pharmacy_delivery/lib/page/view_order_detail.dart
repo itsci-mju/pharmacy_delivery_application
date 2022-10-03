@@ -146,7 +146,10 @@ class _ViewOrderDetailState extends State<ViewOrderDetail> {
                                       ),
                                     ),
                                     Text(
-                                      "กรุณาชำระเงินภายใน ${DateFormat('dd-MM-yyyy HH:mm').format( orders.orderDate!.add(Duration(hours: 24)))}",
+                                        member!.MemberUsername!=null?
+                                      "กรุณาชำระเงินภายใน ${DateFormat('dd-MM-yyyy HH:mm').format( orders.orderDate!.add(Duration(hours: 24)))}"
+                                      : "หมดเวลาการชำระเงิน ${DateFormat('dd-MM-yyyy HH:mm').format( orders.orderDate!.add(Duration(hours: 24)))}",
+
                                       style: TextStyle(
                                         color: Colors.black87,
                                       ),
@@ -598,7 +601,7 @@ class _ViewOrderDetailState extends State<ViewOrderDetail> {
                           child:  Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              if(orders.orderStatus=="cf" && dateNow.isBefore(orders.orderDate!.add(Duration(hours: 24))) )
+                              if(orders.orderStatus=="cf" && dateNow.isBefore(orders.orderDate!.add(Duration(hours: 24))) && member!.MemberUsername!=null  )
                               Container(
                                 width: size.width *0.4,
                                 child: TextButton(
@@ -693,7 +696,7 @@ class _ViewOrderDetailState extends State<ViewOrderDetail> {
         ),
 
         bottomNavigationBar:
-        orders.orderStatus=="cf" && dateNow.isBefore(orders.orderDate!.add(Duration(hours: 24)))? // ชำระเงิน
+        orders.orderStatus=="cf" && dateNow.isBefore(orders.orderDate!.add(Duration(hours: 24))) && member!.MemberUsername!=null ? // ชำระเงิน
         Container(
           padding: EdgeInsets.all(10),
           // height: 174,
