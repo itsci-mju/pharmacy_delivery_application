@@ -577,7 +577,7 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                             await AdviceApi.updateOrderId( advice!,  confirmOrder!);
                             final addOrdetail = await OrderDetailApi.addOrderDetail(listOrderDetail, orders!, advice!.pharmacist!.drugstore!.drugstoreID!);
                             if(addOrdetail!=0){
-                              db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": "cf" }).then((value) async {
+                              db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": "cf","totalPrice":totalPrice,"discount": orders!.coupon!.discount}).then((value) async {
                                 showDialog<String>(context: context,barrierDismissible: false, builder: (BuildContext context) => WillPopScope(
                                   onWillPop: () {
                                     return Future.value(false);
@@ -705,20 +705,19 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
 
         Advice new_advice = await OrdersApi.payOrders(advice!, receiptId);
         if(new_advice!=0){
+          db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": new_advice.orders!.orderStatus }).then((value) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ViewReceipt(advice: new_advice,back: 0, )));
 
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ViewReceipt(advice: new_advice,back: 0, )));
-
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:  Row(
-            children: const [
-              Icon(Icons.check_circle, color: Colors.green,),
-              Text("ชำระเงินสำเร็จ",style: TextStyle(fontSize: 16),),
-            ],
-          ),));
-
-
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:  Row(
+              children: const [
+                Icon(Icons.check_circle, color: Colors.green,),
+                Text("ชำระเงินสำเร็จ",style: TextStyle(fontSize: 16),),
+              ],
+            ),));
+          }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
 
 
         }else{

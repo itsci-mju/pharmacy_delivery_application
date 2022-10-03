@@ -22,6 +22,7 @@ class Orders {
   Coupon? coupon;
   Address? address;
   Review? review;
+  double? discount;
 
   Orders(
       { this.orderId,
@@ -38,7 +39,7 @@ class Orders {
        this.shippingDate,
        this.coupon,
        this.address,
-       this.review});
+       this.review, this.discount});
 
   factory Orders.fromJson(Map<String, dynamic> json) {
     return Orders(
@@ -89,6 +90,7 @@ class Orders {
       totalPrice: doc.get("totalPrice")== null ? null :  doc.get("totalPrice"),
       orderStatus: doc.get("orderStatus")== null ? null :  doc.get("orderStatus"),
       shippingCost: doc.get("shippingCost")== null ? null :  doc.get("shippingCost"),
+      discount : doc.get("discount")== null ? 0 :  doc.get("discount"),
       //address: doc.get("address")== null ? null : Address.fromJson(doc.get("address")),
     );
   }
@@ -101,6 +103,7 @@ class Orders {
       "totalPrice":  this.totalPrice,
       "orderStatus": this.orderStatus  ,
       "shippingCost":  this.shippingCost,
+      "discount" : this.discount,
       //"address":  this.address,
     };
   }

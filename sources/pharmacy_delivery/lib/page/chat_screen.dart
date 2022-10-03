@@ -521,8 +521,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               db.collection('${advice!.pharmacist!.pharmacistID}')
                                   .where('adviceId',isEqualTo: advice!.adviceId)
                                   .snapshots().listen((event) {
-                                String isEnd = event.docs.first['isEnd'];
-                                if( curentUser_id == advice!.pharmacist!.pharmacistID  && isEnd  == "memberEnd"){
+                                if( curentUser_id == advice!.pharmacist!.pharmacistID  && event.docs.first['isEnd']  == "memberEnd"){
                                     memEndChat = true;
                                 }
                                 print("mmmmmmmmmmmmm");
@@ -708,7 +707,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                           hasOrder =false;
                                         }
 
-                                        bool isEnd=false;
+                                        bool isEndTime=false;
                                         SchedulerBinding.instance!.addPostFrameCallback((_){
                                           if(scrollController.hasClients){
                                             scrollController.animateTo(
@@ -720,17 +719,25 @@ class _ChatScreenState extends State<ChatScreen> {
                                         });
 
                                         return Container(
-                                          decoration:  orders.orderStatus == "pc" ||  (now.isAfter(limitTime) && orders.orderStatus=="wcf") || memEndChat==true ?
+                                          decoration:  orders.orderStatus == "pc" ||  (now.isAfter(limitTime) && orders.orderStatus=="wcf") || (memEndChat==true && orders.orderStatus=="wcf") ?
                                           BoxDecoration(
                                               image: DecorationImage(
                                                 image:AssetImage("assets/images/cancelled_stamp.png")  ,
                                                 fit: BoxFit.fitWidth,
                                               )
                                           ) :
-                                          orders.orderStatus == "cf" || orders.orderStatus == "store" || orders.orderStatus == "wt" ?
+                                          orders.orderStatus == "cf"   ?
                                           BoxDecoration(
                                               image: DecorationImage(
                                                 image: AssetImage("assets/images/confirm_stamp.png") ,
+                                                fit: BoxFit.fitWidth,
+                                              )
+                                          )
+                                          :
+                                          orders.orderStatus == "store" || orders.orderStatus == "wt" ?
+                                          BoxDecoration(
+                                              image: DecorationImage(
+                                                image: AssetImage("assets/images/paid_stamp.jpg") ,
                                                 fit: BoxFit.fitWidth,
                                               )
                                           )
@@ -755,26 +762,22 @@ class _ChatScreenState extends State<ChatScreen> {
                                                           Column(children: [
                                                             Align(
                                                               alignment: Alignment.centerRight,
-                                                              child: ( now.isBefore(limitTime) && orders.orderStatus=="wcf") &&  memEndChat==false ?
+                                                              child: ( now.isBefore(limitTime) && orders.orderStatus=="wcf" &&  memEndChat==false ) ?
                                                               TweenAnimationBuilder<Duration>(
                                                                   duration: limitTime.difference(now),
                                                                   tween: Tween(begin: limitTime.difference(now), end: Duration.zero),
                                                                   onEnd: () {
                                                                     print('Timer ended');
                                                                     setState(() {
-                                                                      isEnd=true;
+                                                                      isEndTime=true;
                                                                     });
-                                                                    print(isEnd);
                                                                   },
                                                                   builder: (BuildContext context, Duration value, Widget? child) {
                                                                     final minutes = value.inMinutes;
                                                                     final seconds = value.inSeconds % 60;
                                                                     return Padding(
                                                                         padding: const EdgeInsets.symmetric(vertical: 5),
-                                                                        child: Text( now.isBefore(limitTime) && orders.orderStatus=="wcf"?
-                                                                        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
-                                                                            :
-                                                                        'หมดอายุ',
+                                                                        child: Text('${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
                                                                             textAlign: TextAlign.center,
                                                                             style: TextStyle(
                                                                                 color: Colors.red,fontSize: 16)));
@@ -835,7 +838,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                                   }),
                                               Column(
                                                 children: [
-                                                  if(orders.address!=null)
                                                     Row(
                                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                       children: <Widget>[
@@ -847,7 +849,6 @@ class _ChatScreenState extends State<ChatScreen> {
                                                         ),
                                                       ],
                                                     ),
-                                                  if(orders.address!=null)
                                                     Row(
                                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                       children: <Widget>[
@@ -859,6 +860,17 @@ class _ChatScreenState extends State<ChatScreen> {
                                                         ),
                                                       ],
                                                     ),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: <Widget>[
+                                                      Text( "ส่วนลด",
+                                                        style: Theme.of(context).textTheme.bodyText1,
+                                                      ),
+                                                      Text(formatCurrency(orders.discount! ),
+                                                        style: Theme.of(context).textTheme.bodyText1,
+                                                      ),
+                                                    ],
+                                                  ),
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: <Widget>[

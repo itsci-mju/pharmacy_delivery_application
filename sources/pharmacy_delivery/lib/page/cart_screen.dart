@@ -508,7 +508,7 @@ class _CartScreenState extends State<CartScreen> {
 
                               db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").update({"lastTime": DateTimetoString(message.time!) });
 
-                              Orders orders = Orders(orderDate:DateTime.now(),sumQuantity:sumQuantity,subtotalPrice: subtotalPrice,totalPrice:subtotalPrice+shippingCost,orderStatus:"wcf",shippingCost:double.parse(shipping_controller.text==""? "0" :shipping_controller.text),address: widget.address  );
+                              Orders orders = Orders(orderDate:DateTime.now(),sumQuantity:sumQuantity,subtotalPrice: subtotalPrice,totalPrice:subtotalPrice+double.parse(shipping_controller.text==""? "0" :shipping_controller.text),orderStatus:"wcf",shippingCost:double.parse(shipping_controller.text==""? "0" :shipping_controller.text),address: widget.address,discount: 0  );
                               db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(messageSnapshot.id).collection("Orders").add(orders.toDocument()).then((ordersSnapshot) {
                               print("Added orders with ID: ${ordersSnapshot.id}");
 
