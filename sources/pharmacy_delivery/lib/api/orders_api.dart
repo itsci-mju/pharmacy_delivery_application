@@ -93,7 +93,7 @@ class OrdersApi{
     }
   }
 
-
+/*
   static pCancelOrder(String orderId,Advice advice) async {
     final response = await http.post(Uri.parse(URLRequest.URL_orders_pCancel),
         body: jsonEncode({"orderId":orderId, "advice":jsonEncode(advice.toJson())}),
@@ -111,7 +111,7 @@ class OrdersApi{
       throw Exception();
     }
   }
-
+*/
 
 
   static cancelOrder_member(Orders orders,String drugstoreID) async {

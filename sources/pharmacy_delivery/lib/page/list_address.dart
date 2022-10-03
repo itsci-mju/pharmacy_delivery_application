@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,9 +10,13 @@ import 'package:pharmacy_delivery/page/view_drugstore.dart';
 
 import '../api/address_api.dart';
 import '../api/advice_api.dart';
+import '../api/pharmacist_api.dart';
 import '../class/Address.dart';
+import '../class/Date.dart';
 import '../class/Drugstore.dart';
 import '../class/Member.dart';
+import '../class/Message.dart';
+import '../class/Pharmacist.dart';
 import '../utils/constants.dart';
 import '../utils/custom_functions.dart';
 import '../utils/user_secure_storage.dart';
@@ -28,6 +35,8 @@ class _ListAddressState extends State<ListAddress> {
   Member member = Member();
 
   List<Address>? listAddress;
+  final db= FirebaseFirestore.instance;
+
 
   Future getMember() async {
     Member member = await UserSecureStorage.getMember();
@@ -94,8 +103,29 @@ class _ListAddressState extends State<ListAddress> {
                       itemBuilder: (context, index) {
                       return GestureDetector(
                         onTap: () async {
-                            final advice = await AdviceApi.addAdvice(member.MemberUsername.toString(), "60001",listAddress![index].addressId!);
+                          List<Pharmacist> listPharmacist = await PharmacistApi.checkPharmacistOnline(widget.drugstore.drugstoreID.toString());
+                          final _random = new Random();
+                          var pharmacist = listPharmacist[_random.nextInt(listPharmacist.length)];
+
+                            final advice = await AdviceApi.addAdvice(member.MemberUsername.toString(), pharmacist.pharmacistID!,listAddress![index].addressId!);
                             if(advice!=0){
+                              Message message = Message(messageType: "text",recipient: member.MemberUsername,sender:pharmacist.pharmacistID,text: "${pharmacist.drugstore!.drugstoreName} ยินดีให้บริการ", time: DateTime.now() );
+                              db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((value) {
+                                db.collection('${advice!.pharmacist!.pharmacistID}').doc(member.MemberUsername).set({
+                                  "MemberImg": member.MemberImg,
+                                  "adviceId": advice.adviceId ,
+                                  "isEnd": "",
+                                  "lastTime" : DateTimetoString(DateTime.now())
+                                }).then((value) {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ChatScreen(advice: advice,shipping: "")));
+                                }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
+                              }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(

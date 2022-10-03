@@ -570,12 +570,11 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
 
                           final confirmOrder = await OrdersApi.confirmOrder(orders!, couponName!);
                           if(confirmOrder!=0){
-                           // Orders orders = confirmOrder;
-                            await AdviceApi.updateOrderId( advice!,  confirmOrder!);
                             setState(() {
                               orders = confirmOrder;
                               advice!.orders= confirmOrder;
                             });
+                            await AdviceApi.updateOrderId( advice!,  confirmOrder!);
                             final addOrdetail = await OrderDetailApi.addOrderDetail(listOrderDetail, orders!, advice!.pharmacist!.drugstore!.drugstoreID!);
                             if(addOrdetail!=0){
                               db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": "cf" }).then((value) async {

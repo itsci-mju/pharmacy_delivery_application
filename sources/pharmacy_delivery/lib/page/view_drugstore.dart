@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +20,9 @@ import 'package:pharmacy_delivery/utils/storage_image.dart';
 import '../api/coupon_api.dart';
 import '../api/review_api.dart';
 import '../class/Coupon.dart';
+import '../class/Date.dart';
 import '../class/Member.dart';
+import '../class/Message.dart';
 import '../class/Review.dart';
 import '../costom/OptionButton.dart';
 import '../main.dart';
@@ -51,6 +55,8 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
   List<Pharmacist>? listPharmacist;
   int test = 0;
   late Future futureData;
+
+  final db= FirebaseFirestore.instance;
 
   //String? drugstoreImg ;
 
@@ -342,14 +348,33 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                                                                     icon: Icon(Icons.store, color: Colors.white,),
                                                                     label: Text('รับที่ร้าน', style: TextStyle(color: Colors.white),),
                                                                     onPressed: () async {
-                                                                      //List<Pharmacist> listPharmacist = await PharmacistApi.checkPharmacistOnline(widget.drugstore.drugstoreID.toString());
-                                                                      final advice = await AdviceApi.addAdvice(member!.MemberUsername.toString(), "60001", "");
+                                                                      List<Pharmacist> listPharmacist = await PharmacistApi.checkPharmacistOnline(widget.drugstore.drugstoreID.toString());
+                                                                      final _random = new Random();
+                                                                      var pharmacist = listPharmacist[_random.nextInt(listPharmacist.length)];
+
+                                                                      final advice = await AdviceApi.addAdvice(member!.MemberUsername.toString(), pharmacist.pharmacistID!, "");
                                                                       if(advice!=0){
-                                                                        Navigator.push(
-                                                                            context,
-                                                                            MaterialPageRoute(
-                                                                                builder: (context) =>
-                                                                                    ChatScreen(advice: advice,shipping: "",)));
+
+                                                                        Message message = Message(messageType: "text",recipient: member!.MemberUsername,sender:pharmacist.pharmacistID,text: "${pharmacist.drugstore!.drugstoreName} ยินดีให้บริการ", time: DateTime.now() );
+                                                                      db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((value) {
+                                                                         db.collection('${advice!.pharmacist!.pharmacistID}').doc(member!.MemberUsername).set({
+                                                                          "MemberImg": member!.MemberImg,
+                                                                          "adviceId": advice.adviceId ,
+                                                                          "isEnd": "",
+                                                                          "lastTime" : DateTimetoString(DateTime.now())
+                                                                        }).then((value) {
+                                                                           Navigator.push(
+                                                                               context,
+                                                                               MaterialPageRoute(
+                                                                                   builder: (context) =>
+                                                                                       ChatScreen(advice: advice,shipping: "",)));
+                                                                         }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
+                                                                      }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
+
+
+
                                                                       }
                                                                     },
                                                                   ),
