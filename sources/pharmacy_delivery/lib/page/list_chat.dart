@@ -199,7 +199,6 @@ class _ListChatState extends State<ListChat> {
                                                     ],
                                                   ),
 
-                                                  if(chat!=null)
                                                   Column(
                                                     children: <Widget>[
                                                       if(chat!=null)
@@ -214,25 +213,7 @@ class _ListChatState extends State<ListChat> {
                                                       Text(""),
                                                     ],
                                                   )
-                                                  else
-                                                    Container(
-                                                      padding: EdgeInsets.symmetric(horizontal: 10),
-                                                    decoration: BoxDecoration(
-                                                      color:  Colors.amberAccent,
-                                                      borderRadius: BorderRadius.all(
-                                                        Radius.circular(10.0),
-                                                      ),
-                                                    ),
-
-                                                      child: Text(
-                                                        "New !",
-                                                        style: TextStyle(
-                                                          color: Colors.black87,
-                                                          fontSize: 16.0,
-                                                          fontWeight: FontWeight.w500
-                                                        ),
-                                                      ),
-                                                    ),
+                                                   ,
                                                 ],
                                               ),
                                             ),
