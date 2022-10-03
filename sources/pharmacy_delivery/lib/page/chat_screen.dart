@@ -701,7 +701,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                         DateTime limitTime = orders.orderDate!.add(Duration(minutes: 10));
 
-                                        if( (now.isBefore(limitTime) && orders.orderStatus=="wcf") ||(orders.orderStatus=="cf" ) ) {
+                                        if( (now.isBefore(limitTime) && orders.orderStatus=="wcf") ||(orders.orderStatus=="cf" ) ||(orders.orderStatus=="store" ) ||(orders.orderStatus=="wt" ) ) {
                                           hasOrder =true;
                                         }else{
                                           hasOrder =false;
