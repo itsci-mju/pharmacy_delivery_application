@@ -86,6 +86,7 @@ class _ListChatState extends State<ListChat> {
                           child:
                      StreamBuilder(
                             stream: db.collection('${pharmacist!.pharmacistID}')
+                               .where("lastTime",isNotEqualTo: "")
                                .orderBy("lastTime",descending: true)
                                 //.where("adviceId",isEqualTo: "200")
                                 .snapshots(),

@@ -55,7 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Address? address;
   final db =FirebaseFirestore.instance;
   bool hasOrder= false;
-  bool memEndChat = false;
+  bool isEndChat = false;
 
   List<Cart>? cart=[];
   int sumQTY=0;
@@ -106,11 +106,8 @@ class _ChatScreenState extends State<ChatScreen> {
     getMember();
     getAddress();
 
-
     setState(()  {
-
       advice= widget.advice;
-
       shipping =widget.shipping?? "";
       cart=widget.cart;
       cart ??= [];
@@ -119,9 +116,7 @@ class _ChatScreenState extends State<ChatScreen> {
         sumQTY+= c.quantity!;
       }
 
-
     });
-
   }
 
 
@@ -130,385 +125,328 @@ class _ChatScreenState extends State<ChatScreen> {
     final ThemeData themeData = Theme.of(context);
     Size size = MediaQuery.of(context).size;
 
-
+    print(curentUser_id);
 
     return WillPopScope(
       onWillPop: () {
         return Future.value(false);
       },
-      child: Scaffold(
-        appBar: AppBar(
-          toolbarHeight: 100,
-          centerTitle: false,
-          automaticallyImplyLeading: false,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  if(curentUser_id == advice!.pharmacist!.pharmacistID)
-                    BackButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PharmacistHomePage(index: 1,)));
-                      },
-                    ),
-                  SizedBox(
-                    width: 40,
-                    child: TextButton(
-                      child:  Text(
-                        'End',
-                      ),
-                      style: TextButton.styleFrom(
-                          primary: Colors.white,
-                          backgroundColor: Colors.red,
-                          textStyle: const TextStyle(
-                            fontSize: 14,
-                          )),
-                      onPressed: () async {
-                        curentUser_id == advice!.pharmacist!.pharmacistID
-                            ? showDialog<String>(context: context, builder: (BuildContext context) => Dialog(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)
-                            ),
-                            child: Stack(
-                              overflow: Overflow.visible,
-                              alignment: Alignment.topCenter,
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.all(10) ,
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 10,
-                                  ),
-                                  child: SafeArea(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Center(
-                                          child: RaisedButton(
-                                            color: COLOR_CYAN,
-                                            child: Text('บันทึก', style: TextStyle(color: Colors.white),),
-                                            onPressed: () async {
-
-                                                final endAdvice = await AdviceApi.endAdvice(advice!);
-                                                if(endAdvice==1){
-
-                                                 await  db.collection('${advice!.pharmacist!.pharmacistID}')
-                                                      .doc("${advice!.member!.MemberUsername}").delete().then((value)  async {
-                                                   var snapshotmessage = await db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").get();
-                                                   for (var doc in snapshotmessage.docs) {
-
-                                                     var snapShotOrders = await doc.reference.collection("Orders").get();
-                                                     for (var doc in snapShotOrders.docs) {
-                                                       var snapShotOrdersDetail = await doc.reference.collection("OrderDetail").get();
-                                                       for (var doc in snapShotOrdersDetail.docs) {
-                                                         await doc.reference.delete();
-                                                       }
-                                                        await doc.reference.delete();
-                                                     }
-
-                                                     await doc.reference.delete();
-                                                   }
-
-                                                    Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder: (context) => PharmacistHomePage(index: 1,)));
-                                                    buildToast("บันทึกการสนทนาสำเร็จ",Colors.green);
-                                                  });
-
-
-                                                }else{
-                                                  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
-                                                }
-
-
-                                            },
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ),
-
-                              ],
-                            )
-                        ),)
-                            : memEndAdvice( advice!);
-
-                      },
-                    ),
-                  ),
-                ],
-              ),
-
-              curentUser_id == advice!.pharmacist!.pharmacistID
-                  ? Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CircleAvatar(backgroundImage: NetworkImage( advice!.member!.MemberImg ?? 'https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/member%2Fuser.png?alt=media&token=5842fcab-a485-4e4a-936a-f157dd0da815')),
-
-
-                  SizedBox(width: 20 * 0.75),
-
-                  Text(
-                    advice!.member!.MemberUsername!,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              )
-                  :  Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.store,size: 30,),
-                      addHorizontalSpace(5),
-                      Text( advice!.pharmacist!.drugstore!.drugstoreName!,
-                        style:  TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-
-                  Text(
-                    advice!.pharmacist!.pharmacistName!,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-              if(curentUser_id == advice!.member!.MemberUsername)
-                addHorizontalSpace(30)
-              else
-                if (memEndChat==false )
-                  cart!.length>0
-                      ? Badge(
-                    badgeColor: Colors.red,
-                    toAnimate: true,
-                    badgeContent: Text(
-                      sumQTY.toString(),
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SearchMedicine(
-                                  advice: advice!, cart: cart, shipping: shipping, recipient: message.recipient!, address: address ,
-                                )));
-                      },
-                      child: Icon(
-                        CupertinoIcons.cart_fill,
-                        size: 30,
-                      ),
-                    ),
-                  )
-                      : IconButton(
-                    onPressed: () {
-                      if(hasOrder==false ){
-                        Navigator.push(context,
-                            MaterialPageRoute(
-                                builder: (context) => SearchMedicine(
-                                  advice: advice!, shipping: shipping, recipient: message.recipient!, address: address ,
-                                )));
-                      }else{
-                        showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)
-                            ),
-                            title:  Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
-                            content:  Text( 'มีการเพิ่มรายการยาเรียบร้อยแล้ว', style: TextStyle( fontSize: 16),),
-                            actions: <Widget>[
-                              RaisedButton(
-                                onPressed: () => Navigator.pop(context, 'OK'),
-                                color: COLOR_CYAN,
-                                child: Text('ตกลง', style: TextStyle(color: Colors.white),),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-
-                    },
-                    icon: Icon(
-                      Icons.medical_services,
-                      size: 30,
-                    ),
-                  )
-                else
-                  addHorizontalSpace(30),
-
-
-            ],
-          ),
-          bottom:  curentUser_id == advice!.pharmacist!.pharmacistID?
-          PreferredSize(
-            preferredSize: Size.fromHeight(30.0),
-            child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20,vertical: 5),
-                width: size.width,
-                color: Colors.white,
-                //height: 30.0,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        children: [
-                          Icon(Icons.location_pin,size: 20,),
-                          addHorizontalSpace(5),
-                          Expanded(
-                            child: Text(
-                              address!=null ? "ที่อยู่ : ${address!.addressDetail!}" : "รับยาที่ร้าน" ,
-                              style: TextStyle(
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ]
-                )
-
-            ),
-          )
-              : PreferredSize(child: SizedBox(), preferredSize: Size.fromHeight(0),),
-
-          backgroundColor: COLOR_CYAN,
-          //elevation: 0,
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(//color: Colors.grey[50],
-                  ),
-                  child: ClipRRect(
-                      child: StreamBuilder(
-                          stream: db.collection('${advice!.pharmacist!.pharmacistID}')
-                              .doc("${advice!.member!.MemberUsername}").collection("Message")
-                              .orderBy("time")
-                              .snapshots(),
-                          builder: (context, AsyncSnapshot<QuerySnapshot>  snapShot) {
-                            if( snapShot.hasData && snapShot.data!.docs.isNotEmpty ) {
-                              if(memEndChat==false){
-                                SchedulerBinding.instance!.addPostFrameCallback((_){
-                                  if(scrollController.hasClients){
-                                    scrollController.animateTo(
-                                        scrollController.position.maxScrollExtent,
-                                        duration: const Duration(milliseconds: 100),
-                                        curve: Curves.ease);
+      child: StreamBuilder(
+          stream:db.collection('${advice!.pharmacist!.pharmacistID}')
+              .where('adviceId',isEqualTo: advice!.adviceId)
+              .snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot>  snapShot_checkEnd) {
+            if( snapShot_checkEnd.hasData && snapShot_checkEnd.data!.docs.isNotEmpty && snapShot_checkEnd.connectionState==ConnectionState.active ){
+              print("kkkkkkkkkkkkkkkkkkk");
+              if(  (snapShot_checkEnd.data!.docs.first['isEnd']  == "pharmacistEnd" ) ||(snapShot_checkEnd.data!.docs.first['isEnd']  == "memberEnd" ) ){
+                isEndChat = true;
+              }else{
+                isEndChat = false;
+              }
+            }
+            return Scaffold(
+              appBar: AppBar(
+                toolbarHeight: 100,
+                centerTitle: false,
+                automaticallyImplyLeading: false,
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        if(curentUser_id == advice!.pharmacist!.pharmacistID)
+                          BackButton(
+                            onPressed: () async {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => PharmacistHomePage(index: 1,)));
+                              if(isEndChat==true){
+                                // delete chat
+                                await  db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").delete().then((value)  async {
+                                  var snapshotmessage = await db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").get();
+                                  for (var doc in snapshotmessage.docs) {
+                                    var snapShotOrders = await doc.reference.collection("Orders").get();
+                                    for (var doc in snapShotOrders.docs) {
+                                      var snapShotOrdersDetail = await doc.reference.collection("OrderDetail").get();
+                                      for (var doc in snapShotOrdersDetail.docs) {
+                                        await doc.reference.delete();
+                                      }
+                                      await doc.reference.delete();
+                                    }
+                                    await doc.reference.delete();
                                   }
                                 });
                               }
 
+                            },
+                          ),
+                        if(curentUser_id == advice!.member!.MemberUsername && isEndChat==true)
+                          BackButton(
+                            onPressed: () async {
+                              //back to home
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MainPageMember()),
+                              );
 
-                              db.collection('${advice!.pharmacist!.pharmacistID}')
-                                  .where('adviceId',isEqualTo: advice!.adviceId)
-                                  .snapshots().listen((event) {
-                                if( curentUser_id == advice!.pharmacist!.pharmacistID  && event.docs.first['isEnd']  == "memberEnd"){
-                                    memEndChat = true;
+                              // delete chat
+                              await  db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").delete().then((value)  async {
+                                var snapshotmessage = await db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").get();
+                                for (var doc in snapshotmessage.docs) {
+                                  var snapShotOrders = await doc.reference.collection("Orders").get();
+                                  for (var doc in snapShotOrders.docs) {
+                                    var snapShotOrdersDetail = await doc.reference.collection("OrderDetail").get();
+                                    for (var doc in snapShotOrdersDetail.docs) {
+                                      await doc.reference.delete();
+                                    }
+                                    await doc.reference.delete();
+                                  }
+                                  await doc.reference.delete();
                                 }
-                                print("mmmmmmmmmmmmm");
-
                               });
 
-                              return ListView.builder(
-                                  controller: scrollController,
-                                  shrinkWrap: true,
-                                  // reverse: true,
-                                  padding: EdgeInsets.only(top: 15),
-                                  itemCount: snapShot.data!.docs.length,
-                                  itemBuilder: (BuildContext context, int index) {
+                            },
+                          ),
 
-                                    final Message msg = Message.fromDocument(snapShot.data!.docs[index]); //List.from(listMessage.reversed)[index];
-                                    bool isMe = msg.sender == curentUser_id;
+                        if(isEndChat==false)
+                          SizedBox(
+                            width: 40,
+                            child: TextButton(
+                              child:  Text(
+                                'End',
+                              ),
+                              style: TextButton.styleFrom(
+                                  primary: Colors.white,
+                                  backgroundColor: Colors.red,
+                                  textStyle: const TextStyle(
+                                    fontSize: 14,
+                                  )),
+                              onPressed: () async {
+                                endAdvice( advice!);
 
-                                    if(memEndChat==true &&  index==snapShot.data!.docs.length-1 ) {
-                                      return  _buildMessage(msg, isMe,true);
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
 
-                                    }else{
+                    curentUser_id == advice!.pharmacist!.pharmacistID
+                        ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CircleAvatar(backgroundImage: NetworkImage( advice!.member!.MemberImg ?? 'https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/member%2Fuser.png?alt=media&token=5842fcab-a485-4e4a-936a-f157dd0da815')),
 
-                                      return  _buildMessage(msg, isMe,false);
-                                    }
 
+                        SizedBox(width: 20 * 0.75),
 
+                        Text(
+                          advice!.member!.MemberUsername!,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    )
+                        :  Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.store,size: 30,),
+                            addHorizontalSpace(5),
+                            Text( advice!.pharmacist!.drugstore!.drugstoreName!,
+                              style:  TextStyle(fontSize: 18,fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
 
-                                  }
+                        Text(
+                          advice!.pharmacist!.pharmacistName!,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    if(curentUser_id == advice!.member!.MemberUsername)
+                      addHorizontalSpace(30)
+                    else
+                      if (isEndChat==false )
+                        cart!.length>0
+                            ? Badge(
+                          badgeColor: Colors.red,
+                          toAnimate: true,
+                          badgeContent: Text(
+                            sumQTY.toString(),
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SearchMedicine(
+                                        advice: advice!, cart: cart, shipping: shipping, recipient: message.recipient!, address: address ,
+                                      )));
+                            },
+                            child: Icon(
+                              CupertinoIcons.cart_fill,
+                              size: 30,
+                            ),
+                          ),
+                        )
+                            : IconButton(
+                          onPressed: () {
+                            if(hasOrder==false ){
+                              Navigator.push(context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SearchMedicine(
+                                        advice: advice!, shipping: shipping, recipient: message.recipient!, address: address ,
+                                      )));
+                            }else{
+                              showDialog<String>(
+                                context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)
+                                  ),
+                                  title:  Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
+                                  content:  Text( 'มีการเพิ่มรายการยาเรียบร้อยแล้ว', style: TextStyle( fontSize: 16),),
+                                  actions: <Widget>[
+                                    RaisedButton(
+                                      onPressed: () => Navigator.pop(context, 'OK'),
+                                      color: COLOR_CYAN,
+                                      child: Text('ตกลง', style: TextStyle(color: Colors.white),),
+                                    ),
+                                  ],
+                                ),
                               );
                             }
-                            else if (snapShot.hasError) {
-                              return forLoad_Error(snapShot, themeData);
-                            } else if (snapShot.data!=null && snapShot.data!.docs.isEmpty && curentUser_id== advice!.member!.MemberUsername )  {
-                              SchedulerBinding.instance?.addPostFrameCallback((_) {
-                                print("hhhhhhhhhhhhhhh");
-                                showDialog<String>(
-                                  context: context,
-                                  barrierColor: Color(0x2F000000),
-                                  barrierDismissible: false,
-                                  builder: (BuildContext context) =>
-                                      AlertDialog(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                10)
-                                        ),
-                                        title: const Text('แจ้งเตือน',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 20,
-                                              color: Colors.red),),
-                                        content: const Text(
-                                          'ขณะนี้การสนทนาได้จบลงแล้ว',
-                                          style: TextStyle(fontSize: 16),),
-                                        actions: <Widget>[
-                                          RaisedButton(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        MainPageMember()),
-                                              );
-                                            },
-                                            color: COLOR_CYAN,
-                                            child: Text('ตกลง',
-                                              style: TextStyle(
-                                                  color: Colors.white),),
-                                          ),
 
-                                        ],
-                                      ),
-                                );
-                              });
-
-                              return  SizedBox();
-                            } else {
-                              return SizedBox();
-                            }
+                          },
+                          icon: Icon(
+                            Icons.medical_services,
+                            size: 30,
+                          ),
+                        )
+                      else
+                        addHorizontalSpace(30),
 
 
-                          }
+                  ],
+                ),
+                bottom:  curentUser_id == advice!.pharmacist!.pharmacistID?
+                PreferredSize(
+                  preferredSize: Size.fromHeight(30.0),
+                  child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 20,vertical: 5),
+                      width: size.width,
+                      color: Colors.white,
+                      //height: 30.0,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              children: [
+                                Icon(Icons.location_pin,size: 20,),
+                                addHorizontalSpace(5),
+                                Expanded(
+                                  child: Text(
+                                    address!=null ? "ที่อยู่ : ${address!.addressDetail!}" : "รับยาที่ร้าน" ,
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ]
                       )
 
-                  )),
-            ),
-            if( memEndChat == false)
-              _buildMessageComposer(),
-          ],
-        ),
+                  ),
+                )
+                    : PreferredSize(child: SizedBox(), preferredSize: Size.fromHeight(0),),
 
+                backgroundColor: COLOR_CYAN,
+                //elevation: 0,
+              ),
+              body: Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(//color: Colors.grey[50],
+                        ),
+                        child: ClipRRect(
+                            child: StreamBuilder(
+                                stream: db.collection('${advice!.pharmacist!.pharmacistID}')
+                                    .doc("${advice!.member!.MemberUsername}").collection("Message")
+                                    .orderBy("time")
+                                    .snapshots(),
+                                builder: (context, AsyncSnapshot<QuerySnapshot>  snapShot) {
+
+                                  if( snapShot.hasData && snapShot.data!.docs.isNotEmpty && snapShot.connectionState==ConnectionState.active ) {
+                                    print("test streammmm");
+                                    if(isEndChat==false){
+                                      SchedulerBinding.instance!.addPostFrameCallback((_){
+                                        if(scrollController.hasClients){
+                                          scrollController.animateTo(
+                                              scrollController.position.maxScrollExtent,
+                                              duration: const Duration(milliseconds: 100),
+                                              curve: Curves.ease);
+                                        }
+                                      });
+                                    }
+
+                                    return ListView.builder(
+                                        controller: scrollController,
+                                        shrinkWrap: true,
+                                        // reverse: true,
+                                        padding: EdgeInsets.only(top: 15),
+                                        itemCount: snapShot.data!.docs.length,
+                                        itemBuilder: (BuildContext context, int index) {
+
+                                          final Message msg = Message.fromDocument(snapShot.data!.docs[index]); //List.from(listMessage.reversed)[index];
+                                          bool isMe = msg.sender == curentUser_id;
+
+                                          if(isEndChat==true &&  index==snapShot.data!.docs.length-1 ) {
+                                            return  _buildMessage(msg, isMe,true,snapShot_checkEnd.data!.docs.first['isEnd']  );
+
+                                          }else{
+
+                                            return  _buildMessage(msg, isMe,false,snapShot_checkEnd.data!.docs.first['isEnd'] );
+                                          }
+
+
+
+                                        }
+                                    );
+                                  }
+                                  else if (snapShot.hasError) {
+                                    return forLoad_Error(snapShot, themeData);
+                                  }
+
+                                  else {
+                                    return SizedBox();
+                                  }
+
+
+                                }
+                            )
+
+                        )),
+                  ),
+                  if( isEndChat == false)
+                    _buildMessageComposer(),
+                ],
+              ),
+
+            );
+          }
       ),
     );
   }
 
-  _buildMessage(Message msg, bool isMe,bool isLast)   {
+  _buildMessage(Message msg, bool isMe,bool isLast,String whoEnd)   {
     final ThemeData themeData = Theme.of(context);
 
     return Container(
@@ -599,7 +537,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                           hasOrder =false;
                                         }
 
-                                        bool isEndTime=false;
+                                        bool isTimeOut=false;
                                         SchedulerBinding.instance!.addPostFrameCallback((_){
                                           if(scrollController.hasClients){
                                             scrollController.animateTo(
@@ -611,7 +549,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                         });
 
                                         return Container(
-                                          decoration:  orders.orderStatus == "pc" ||  (now.isAfter(limitTime) && orders.orderStatus=="wcf") || (memEndChat==true && orders.orderStatus=="wcf") ?
+                                          decoration:  orders.orderStatus == "pc" ||  (now.isAfter(limitTime) && orders.orderStatus=="wcf") || (isEndChat==true && orders.orderStatus=="wcf") ?
                                           BoxDecoration(
                                               image: DecorationImage(
                                                 image:AssetImage("assets/images/cancelled_stamp.png")  ,
@@ -625,7 +563,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                                 fit: BoxFit.fitWidth,
                                               )
                                           )
-                                          :
+                                              :
                                           orders.orderStatus == "store" || orders.orderStatus == "wt" ?
                                           BoxDecoration(
                                               image: DecorationImage(
@@ -654,14 +592,14 @@ class _ChatScreenState extends State<ChatScreen> {
                                                           Column(children: [
                                                             Align(
                                                               alignment: Alignment.centerRight,
-                                                              child: ( now.isBefore(limitTime) && orders.orderStatus=="wcf" &&  memEndChat==false ) ?
+                                                              child: ( now.isBefore(limitTime) && orders.orderStatus=="wcf" &&  isEndChat==false ) ?
                                                               TweenAnimationBuilder<Duration>(
                                                                   duration: limitTime.difference(now),
                                                                   tween: Tween(begin: limitTime.difference(now), end: Duration.zero),
                                                                   onEnd: () {
                                                                     print('Timer ended');
                                                                     setState(() {
-                                                                      isEndTime=true;
+                                                                      isTimeOut=true;
                                                                     });
                                                                   },
                                                                   builder: (BuildContext context, Duration value, Widget? child) {
@@ -730,28 +668,28 @@ class _ChatScreenState extends State<ChatScreen> {
                                                   }),
                                               Column(
                                                 children: [
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: <Widget>[
-                                                        Text("รวม",
-                                                          style: Theme.of(context).textTheme.bodyText1,
-                                                        ),
-                                                        Text(formatCurrency(orders.subtotalPrice! ),
-                                                          style: Theme.of(context).textTheme.bodyText1,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: <Widget>[
-                                                        Text("ค่าจัดส่ง",
-                                                          style: Theme.of(context).textTheme.bodyText1,
-                                                        ),
-                                                        Text(formatCurrency(orders.shippingCost! ),
-                                                          style: Theme.of(context).textTheme.bodyText1,
-                                                        ),
-                                                      ],
-                                                    ),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: <Widget>[
+                                                      Text("รวม",
+                                                        style: Theme.of(context).textTheme.bodyText1,
+                                                      ),
+                                                      Text(formatCurrency(orders.subtotalPrice! ),
+                                                        style: Theme.of(context).textTheme.bodyText1,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: <Widget>[
+                                                      Text("ค่าจัดส่ง",
+                                                        style: Theme.of(context).textTheme.bodyText1,
+                                                      ),
+                                                      Text(formatCurrency(orders.shippingCost! ),
+                                                        style: Theme.of(context).textTheme.bodyText1,
+                                                      ),
+                                                    ],
+                                                  ),
                                                   Row(
                                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                     children: <Widget>[
@@ -777,7 +715,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                                                   addVerticalSpace(5),
 
-                                                  if( orders.orderStatus == "wcf" &&  now.isBefore(limitTime) && memEndChat==false )
+                                                  if( orders.orderStatus == "wcf" &&  now.isBefore(limitTime) && isEndChat==false )
                                                     Row(
                                                       mainAxisAlignment: MainAxisAlignment.center,
                                                       children: [
@@ -954,7 +892,10 @@ class _ChatScreenState extends State<ChatScreen> {
             Center(child: Column(
               children: [
                 addVerticalSpace(20),
-                Text("${advice!.member!.MemberUsername} จบการสนทนา",style: TextStyle(fontSize: 16),),
+                whoEnd  == "memberEnd" ?
+                Text("${advice!.member!.MemberUsername} จบการสนทนา",style: TextStyle(fontSize: 16),)
+                    :
+                Text("${advice!.pharmacist!.pharmacistName! } จบการสนทนา",style: TextStyle(fontSize: 16),),
                 addVerticalSpace(10),
               ],
             ))
@@ -1044,7 +985,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  memEndAdvice(Advice advice)  {
+  endAdvice(Advice advice)  {
     showDialog<String>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -1060,16 +1001,37 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Text('ไม่ใช่', style: TextStyle(color: Colors.white),),
           ),
           RaisedButton(
-            onPressed: ()  {
-              db.collection('${advice.pharmacist!.pharmacistID}').doc("${advice.member!.MemberUsername}").update({"isEnd": "memberEnd" }).then((value) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => MainPageMember()),
-                );
-                buildToast("จบการสนทนา",Colors.green);
+            onPressed: ()   async {
+              //update idEnd
+              String whoEnd =  curentUser_id == advice.pharmacist!.pharmacistID? "pharmacistEnd" : "memberEnd";
+              await db.collection('${advice.pharmacist!.pharmacistID}').doc("${advice.member!.MemberUsername}").update({"isEnd": whoEnd,"lastTime":"" }).then((value) async {
+                final endAdvice = await AdviceApi.endAdvice(advice);
+                if(endAdvice==1){
+
+                    // back to home
+                    if( curentUser_id == advice.pharmacist!.pharmacistID){
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PharmacistHomePage(index: 1,)));
+                      buildToast("จบการสนทนา",Colors.green);
+                    }
+                    else if( curentUser_id == advice.member!.MemberUsername){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => MainPageMember()),
+                      );
+                      buildToast("จบการสนทนา",Colors.green);
+                    }
+
+
+                }else{
+                  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
+                }
 
               }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
 
             },
             color: COLOR_CYAN,
@@ -1081,33 +1043,4 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  showMemEndAdvice(){
-    db.collection('${advice!.pharmacist!.pharmacistID}').where("isEnd",isEqualTo: "memberEnd").where('adviceId',isEqualTo: advice!.adviceId).snapshots().listen(
-          (event) {
-        print("${event.docs}");
-        if( curentUser_id == advice!.pharmacist!.pharmacistID){
-          showDialog<String>(
-            barrierColor: Color(0x1F000000),
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)
-              ),
-              title: const Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
-              content: const Text('ลูกค้าออกจากการสนทนาแล้ว กรุณาบันทึกข้อมูลคำปรึกษา', style: TextStyle( fontSize: 16),),
-              actions: <Widget>[
-                RaisedButton(
-                  onPressed: ()  {Navigator.pop(context);  },
-                  color: COLOR_CYAN,
-                  child: Text('ตกลง', style: TextStyle(color: Colors.white),),
-                ),
-              ],
-            ),
-          );
-        }
-        print("Listen pass: ");
-      },
-      onError: (error) => print("Listen failed: $error"),
-    );
-  }
 }
