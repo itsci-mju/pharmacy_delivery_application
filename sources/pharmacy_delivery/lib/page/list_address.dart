@@ -107,13 +107,14 @@ class _ListAddressState extends State<ListAddress> {
                           final _random = new Random();
                           var pharmacist = listPharmacist[_random.nextInt(listPharmacist.length)];
 
-                            final advice = await AdviceApi.addAdvice(member.MemberUsername.toString(), pharmacist.pharmacistID!,listAddress![index].addressId!);
+                            final advice = await AdviceApi.addAdvice(member.MemberUsername.toString(), pharmacist.pharmacistID!);
                             if(advice!=0){
                               Message message = Message(messageType: "text",recipient: member.MemberUsername,sender:pharmacist.pharmacistID,text: "${pharmacist.drugstore!.drugstoreName} ยินดีให้บริการ", time: DateTime.now() );
                               db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((value) {
                                 db.collection('${advice!.pharmacist!.pharmacistID}').doc(member.MemberUsername).set({
                                   "MemberImg": member.MemberImg,
                                   "adviceId": advice.adviceId ,
+                                  "addressId": listAddress![index].addressId! ,
                                   "isEnd": "",
                                   "lastTime" : DateTimetoString(DateTime.now())
                                 }).then((value) {

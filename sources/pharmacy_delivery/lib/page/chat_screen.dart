@@ -89,7 +89,8 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Future getAddress(String addressId) async {
+  Future getAddress() async {
+    String addressId = await  db.collection('${widget.advice.pharmacist!.pharmacistID}').doc('${widget.advice.member!.MemberUsername}').get().then((doc) => doc.get("addressId"));
     final address = await AddressApi.fetchAddress(addressId) ;
     setState(() {
       this.address = address;
@@ -103,7 +104,7 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
     getPharmacist();
     getMember();
-    getAddress(widget.advice.adviceDetail!);
+    getAddress();
 
 
     setState(()  {
@@ -177,169 +178,60 @@ class _ChatScreenState extends State<ChatScreen> {
                               overflow: Overflow.visible,
                               alignment: Alignment.topCenter,
                               children: [
-                                Form(
-                                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                                  key: _formKey,
-                                  child: Container(
-                                    margin: EdgeInsets.all(10) ,
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 10,
-                                      horizontal: 10,
-                                    ),
-                                    child: SafeArea(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Center(
-                                            child: Text(
-                                              "สิ้นสุดการสนทนา",
-                                              style:TextStyle( fontSize: 18, color: Colors.black),textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 8),
-                                            child: Divider(
-                                              color: Colors.black87,
-                                              thickness: 1,
-                                            ),
-                                          ),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              Text("หัวข้อคำปรึกษา",
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black87,),
-                                              ),
-                                              addVerticalSpace(5),
-                                              TextFormField(
-                                                validator: (value) {
-                                                  if (value == null ||
-                                                      value.trim().isEmpty )
-                                                    return  "* กรุณากรอกหัวข้อคำปรึกษา";
-                                                  else
-                                                    return null;
-                                                },
-                                                keyboardType: TextInputType.text,
-                                                inputFormatters: [
-                                                  LengthLimitingTextInputFormatter(50),
-                                                ],
-                                                controller: adviceTitle,
-                                                decoration: InputDecoration(
-                                                  isDense: true,
-                                                  contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                                                  hintText: "หัวข้อคำปรึกษา",
-                                                  border: OutlineInputBorder(
-                                                    //borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  fillColor: Colors.white,
-                                                  filled: true,
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(color: COLOR_CYAN),
-                                                  ),
-                                                  errorBorder: new OutlineInputBorder(
-                                                    borderSide: BorderSide(color: Colors.red),
-                                                  ),
-                                                ),
-                                                style: TextStyle( fontSize: 16,color: Colors.black),
-                                              ),
-                                            ],
-                                          ),
-                                          addVerticalSpace(10),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: <Widget>[
-                                              Text("รายละเอียดคำปรึกษา",
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.black87,),
-                                              ),
-                                              addVerticalSpace(5),
-                                              TextFormField(
-                                                validator: (value) {
-                                                  if (value == null ||
-                                                      value.trim().isEmpty )
-                                                    return  "* กรุณากรอกรายละเอียดคำปรึกษา";
-                                                  else
-                                                    return null;
-                                                },
-                                                keyboardType: TextInputType.text,
-                                                inputFormatters: [
-                                                  LengthLimitingTextInputFormatter(255),
-                                                ],
-                                                controller: adviceDetail,
-                                                decoration: InputDecoration(
-                                                  isDense: true,
-                                                  contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                                                  hintText: "รายละเอียดคำปรึกษา",
-                                                  border: OutlineInputBorder(
-                                                    //borderRadius: BorderRadius.circular(12),
-                                                  ),
-                                                  fillColor: Colors.white,
-                                                  filled: true,
-                                                  focusedBorder: OutlineInputBorder(
-                                                    borderSide: BorderSide(color: COLOR_CYAN),
-                                                  ),
-                                                  errorBorder: new OutlineInputBorder(
-                                                    borderSide: BorderSide(color: Colors.red),
-                                                  ),
-                                                ),
-                                                style: TextStyle( fontSize: 16,color: Colors.black),
-                                              ),
-                                            ],
-                                          ),
-                                          addVerticalSpace(10),
-                                          Center(
-                                            child: RaisedButton(
-                                              color: COLOR_CYAN,
-                                              child: Text('บันทึก', style: TextStyle(color: Colors.white),),
-                                              onPressed: () async {
-                                                if (_formKey.currentState!.validate()) {
-                                                  advice!.adviceTitle = adviceTitle.text;
-                                                  advice!.adviceDetail = adviceDetail.text;
+                                Container(
+                                  margin: EdgeInsets.all(10) ,
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 10,
+                                  ),
+                                  child: SafeArea(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Center(
+                                          child: RaisedButton(
+                                            color: COLOR_CYAN,
+                                            child: Text('บันทึก', style: TextStyle(color: Colors.white),),
+                                            onPressed: () async {
 
+                                                final endAdvice = await AdviceApi.endAdvice(advice!);
+                                                if(endAdvice==1){
 
-                                                  final endAdvice = await AdviceApi.endAdvice(advice!);
-                                                  if(endAdvice==1){
+                                                 await  db.collection('${advice!.pharmacist!.pharmacistID}')
+                                                      .doc("${advice!.member!.MemberUsername}").delete().then((value)  async {
+                                                   var snapshotmessage = await db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").get();
+                                                   for (var doc in snapshotmessage.docs) {
 
-
-
-                                                   await  db.collection('${advice!.pharmacist!.pharmacistID}')
-                                                        .doc("${advice!.member!.MemberUsername}").delete().then((value)  async {
-                                                     var snapshotmessage = await db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").get();
-                                                     for (var doc in snapshotmessage.docs) {
-
-                                                       var snapShotOrders = await doc.reference.collection("Orders").get();
-                                                       for (var doc in snapShotOrders.docs) {
-                                                         var snapShotOrdersDetail = await doc.reference.collection("OrderDetail").get();
-                                                         for (var doc in snapShotOrdersDetail.docs) {
-                                                           await doc.reference.delete();
-                                                         }
-                                                          await doc.reference.delete();
+                                                     var snapShotOrders = await doc.reference.collection("Orders").get();
+                                                     for (var doc in snapShotOrders.docs) {
+                                                       var snapShotOrdersDetail = await doc.reference.collection("OrderDetail").get();
+                                                       for (var doc in snapShotOrdersDetail.docs) {
+                                                         await doc.reference.delete();
                                                        }
-
-                                                       await doc.reference.delete();
+                                                        await doc.reference.delete();
                                                      }
 
-                                                      Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                              builder: (context) => PharmacistHomePage(index: 1,)));
-                                                      buildToast("บันทึกการสนทนาสำเร็จ",Colors.green);
-                                                    });
+                                                     await doc.reference.delete();
+                                                   }
+
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (context) => PharmacistHomePage(index: 1,)));
+                                                    buildToast("บันทึกการสนทนาสำเร็จ",Colors.green);
+                                                  });
 
 
-                                                  }else{
-                                                    buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
-                                                  }
+                                                }else{
+                                                  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
                                                 }
 
-                                              },
-                                            ),
-                                          )
-                                        ],
-                                      ),
+
+                                            },
+                                          ),
+                                        )
+                                      ],
                                     ),
                                   ),
                                 ),

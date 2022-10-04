@@ -352,7 +352,7 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                                                                       final _random = new Random();
                                                                       var pharmacist = listPharmacist[_random.nextInt(listPharmacist.length)];
 
-                                                                      final advice = await AdviceApi.addAdvice(member!.MemberUsername.toString(), pharmacist.pharmacistID!, "");
+                                                                      final advice = await AdviceApi.addAdvice(member!.MemberUsername.toString(), pharmacist.pharmacistID!);
                                                                       if(advice!=0){
 
                                                                         Message message = Message(messageType: "text",recipient: member!.MemberUsername,sender:pharmacist.pharmacistID,text: "${pharmacist.drugstore!.drugstoreName} ยินดีให้บริการ", time: DateTime.now() );
@@ -360,6 +360,7 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                                                                          db.collection('${advice!.pharmacist!.pharmacistID}').doc(member!.MemberUsername).set({
                                                                           "MemberImg": member!.MemberImg,
                                                                           "adviceId": advice.adviceId ,
+                                                                           "addressId": "" ,
                                                                           "isEnd": "",
                                                                           "lastTime" : DateTimetoString(DateTime.now())
                                                                         }).then((value) {

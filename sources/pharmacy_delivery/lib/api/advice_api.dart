@@ -6,9 +6,9 @@ import '../class/Orders.dart';
 import '../utils/URLRequest.dart';
 
 class AdviceApi{
-  static addAdvice(String MemberUsername, String pharmacistID, String addressId) async {
+  static addAdvice(String MemberUsername, String pharmacistID ) async {
     final response = await http.post(Uri.parse(URLRequest.URL_advice_add),
-        body: jsonEncode({"MemberUsername":MemberUsername,"pharmacistID":pharmacistID, "addressId":addressId }),
+        body: jsonEncode({"MemberUsername":MemberUsername,"pharmacistID":pharmacistID }),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json"
