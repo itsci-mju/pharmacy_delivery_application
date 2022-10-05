@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:pharmacy_delivery/api/address_api.dart';
 import 'package:pharmacy_delivery/class/Medicine.dart';
@@ -125,7 +126,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final ThemeData themeData = Theme.of(context);
     Size size = MediaQuery.of(context).size;
 
-    print(curentUser_id);
+    //print(curentUser_id);
 
     return WillPopScope(
       onWillPop: () {
@@ -136,13 +137,17 @@ class _ChatScreenState extends State<ChatScreen> {
               .where('adviceId',isEqualTo: advice!.adviceId)
               .snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot>  snapShot_checkEnd) {
+            String whoEnd ="";
             if( snapShot_checkEnd.hasData && snapShot_checkEnd.data!.docs.isNotEmpty && snapShot_checkEnd.connectionState==ConnectionState.active ){
-              print("kkkkkkkkkkkkkkkkkkk");
+             // print("kkkkkkkkkkkkkkkkkkk");
+              whoEnd = snapShot_checkEnd.data!.docs.first['isEnd'];
+
               if(  (snapShot_checkEnd.data!.docs.first['isEnd']  == "pharmacistEnd" ) ||(snapShot_checkEnd.data!.docs.first['isEnd']  == "memberEnd" ) ){
                 isEndChat = true;
               }else{
                 isEndChat = false;
               }
+
             }
             return Scaffold(
               appBar: AppBar(
@@ -385,7 +390,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 builder: (context, AsyncSnapshot<QuerySnapshot>  snapShot) {
 
                                   if( snapShot.hasData && snapShot.data!.docs.isNotEmpty && snapShot.connectionState==ConnectionState.active ) {
-                                    print("test streammmm");
+                                    // print("test streammmm");
                                     if(isEndChat==false){
                                       SchedulerBinding.instance!.addPostFrameCallback((_){
                                         if(scrollController.hasClients){
@@ -409,11 +414,11 @@ class _ChatScreenState extends State<ChatScreen> {
                                           bool isMe = msg.sender == curentUser_id;
 
                                           if(isEndChat==true &&  index==snapShot.data!.docs.length-1 ) {
-                                            return  _buildMessage(msg, isMe,true,snapShot_checkEnd.data!.docs.first['isEnd']  );
+                                            return  _buildMessage(msg, isMe,true,whoEnd  );
 
                                           }else{
 
-                                            return  _buildMessage(msg, isMe,false,snapShot_checkEnd.data!.docs.first['isEnd'] );
+                                            return  _buildMessage(msg, isMe,false,whoEnd );
                                           }
 
 
@@ -1004,10 +1009,13 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressed: ()   async {
               //update idEnd
               String whoEnd =  curentUser_id == advice.pharmacist!.pharmacistID? "pharmacistEnd" : "memberEnd";
-              await db.collection('${advice.pharmacist!.pharmacistID}').doc("${advice.member!.MemberUsername}").update({"isEnd": whoEnd,"lastTime":"" }).then((value) async {
-                final endAdvice = await AdviceApi.endAdvice(advice);
-                if(endAdvice==1){
 
+
+              await db.collection('${advice.pharmacist!.pharmacistID}').doc("${advice.member!.MemberUsername}").update({"isEnd": whoEnd,"lastTime":"" }).then((value) async {
+                EasyLoading.show();
+                final endAdvice = await AdviceApi.endAdvice(advice);
+                EasyLoading.dismiss();
+                if(endAdvice==1){
                     // back to home
                     if( curentUser_id == advice.pharmacist!.pharmacistID){
                       Navigator.push(

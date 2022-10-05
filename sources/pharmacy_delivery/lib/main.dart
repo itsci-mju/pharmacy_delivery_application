@@ -41,6 +41,7 @@ void main() async {
 void configLoading() {
   EasyLoading.instance
     ..displayDuration = const Duration(milliseconds: 2000)
+    ..indicatorType = EasyLoadingIndicatorType.ring
     ..maskType = EasyLoadingMaskType.black
     ..loadingStyle = EasyLoadingStyle.custom
     ..indicatorSize = 55.0

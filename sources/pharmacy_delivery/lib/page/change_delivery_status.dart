@@ -299,8 +299,8 @@ class _ChangeDeliveryStatusState extends State<ChangeDeliveryStatus> {
                                       onPressed:
                                           () async {
                                             if (_formKey.currentState!.validate()) {
-                                              EasyLoading.show();
 
+                                              EasyLoading.show();
                                               final addShipping = await OrdersApi.addShipping(orders.orderId!, shipDate_ctl.text, shippingCompany, trackingNumber_ctl.text) ;
                                               EasyLoading.dismiss();
 

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:pharmacy_delivery/api/address_api.dart';
 import 'package:pharmacy_delivery/api/advice_api.dart';
@@ -568,6 +569,7 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                           String? couponName = orders!.coupon!=null? orders!.coupon!.couponName : "";
                           orders!.totalPrice = totalPrice!;
 
+                          EasyLoading.show();
                           final confirmOrder = await OrdersApi.confirmOrder(orders!, couponName!);
                           if(confirmOrder!=0){
                             setState(() {
@@ -576,6 +578,7 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                             });
                             await AdviceApi.updateOrderId( advice!,  confirmOrder!);
                             final addOrdetail = await OrderDetailApi.addOrderDetail(listOrderDetail, orders!, advice!.pharmacist!.drugstore!.drugstoreID!);
+                            EasyLoading.dismiss();
                             if(addOrdetail!=0){
                               db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": "cf","totalPrice":totalPrice,"discount": discount}).then((value) async {
                                 showDialog<String>(context: context,barrierDismissible: false, builder: (BuildContext context) => WillPopScope(
@@ -703,7 +706,9 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
 
         String receiptId = paymentIntentData!['created'].toString();
 
+
         Advice new_advice = await OrdersApi.payOrders(advice!, receiptId);
+
         if(new_advice!=0){
           db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(widget.messageId).collection("Orders").doc("${widget.ordersId}").update({"orderStatus": new_advice.orders!.orderStatus }).then((value) {
             Navigator.push(

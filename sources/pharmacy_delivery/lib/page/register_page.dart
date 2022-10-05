@@ -4,6 +4,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_multi_formatter/formatters/masked_input_formatter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -276,8 +277,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                             child: ElevatedButton(
                                               onPressed: () async {
                                                 if (_formKey.currentState!.validate()) {
-                                                    await uploadFile();
+                                                  EasyLoading.show();
+
+                                                  await uploadFile();
                                                     final resultMem = await MemberApi.doRegister(member);
+                                                  EasyLoading.dismiss();
                                                     if (resultMem != 0) {
                                                       showDialog(context: context, barrierDismissible: false, builder: (BuildContext context){
                                                         return Dialog(

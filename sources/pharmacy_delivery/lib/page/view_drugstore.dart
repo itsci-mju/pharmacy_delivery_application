@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/intl.dart';
 import 'package:pharmacy_delivery/api/advice_api.dart';
 import 'package:pharmacy_delivery/api/pharmacist_api.dart';
@@ -348,11 +349,13 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                                                                     icon: Icon(Icons.store, color: Colors.white,),
                                                                     label: Text('รับที่ร้าน', style: TextStyle(color: Colors.white),),
                                                                     onPressed: () async {
+                                                                      EasyLoading.show();
                                                                       List<Pharmacist> listPharmacist = await PharmacistApi.checkPharmacistOnline(widget.drugstore.drugstoreID.toString());
                                                                       final _random = new Random();
                                                                       var pharmacist = listPharmacist[_random.nextInt(listPharmacist.length)];
 
                                                                       final advice = await AdviceApi.addAdvice(member!.MemberUsername.toString(), pharmacist.pharmacistID!);
+                                                                      EasyLoading.dismiss();
                                                                       if(advice!=0){
 
                                                                         Message message = Message(messageType: "text",recipient: member!.MemberUsername,sender:pharmacist.pharmacistID,text: "${pharmacist.drugstore!.drugstoreName} ยินดีให้บริการ", time: DateTime.now() );
@@ -364,6 +367,7 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                                                                           "isEnd": "",
                                                                           "lastTime" : DateTimetoString(DateTime.now())
                                                                         }).then((value) {
+
                                                                            Navigator.push(
                                                                                context,
                                                                                MaterialPageRoute(
@@ -372,11 +376,9 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                                                                          }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
 
                                                                       }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
-
-
-
-
                                                                       }
+
+
                                                                     },
                                                                   ),
                                                                   RaisedButton.icon(

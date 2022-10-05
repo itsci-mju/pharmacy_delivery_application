@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pharmacy_delivery/api/member_api.dart';
@@ -18,7 +19,6 @@ import '../costom/rounded_input_field.dart';
 import '../costom/rounded_password_field.dart';
 import '../costom/text_field_container.dart';
 import '../utils/user_secure_storage.dart';
-import 'mainPage.dart';
 import 'search_drugstore.dart';
 
 class LoginPage extends StatefulWidget {
@@ -206,8 +206,9 @@ class _LoginPageState extends State<LoginPage> {
                                           member?.MemberPassword =
                                               passwordMem.text;
                                         });
-                                        final resultMem =
-                                            await MemberApi.doLogin(member!);
+                                        EasyLoading.show();
+                                        final resultMem = await MemberApi.doLogin(member!);
+                                        EasyLoading.dismiss();
                                         if (resultMem != 0) {
                                           Navigator.push(
                                             context,
@@ -231,9 +232,10 @@ class _LoginPageState extends State<LoginPage> {
                                               passwordPhar.text;
                                         });
 
-                                        final resultPhar =
-                                            await PharmacistApi.doLogin(
+                                        EasyLoading.show();
+                                        final resultPhar = await PharmacistApi.doLogin(
                                                 pharmacist!);
+                                        EasyLoading.dismiss();
                                         if (resultPhar != 0) {
                                           Navigator.push(
                                             context,

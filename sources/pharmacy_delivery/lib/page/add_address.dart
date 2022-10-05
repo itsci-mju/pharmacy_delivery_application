@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:pharmacy_delivery/api/address_api.dart';
 
 import '../class/Address.dart';
@@ -182,7 +183,11 @@ class _AddAddressState extends State<AddAddress> {
                                       if (_formKey.currentState!.validate()){
                                         address.addressDetail = address_ctl.text +" ต." + subdistrict_ctl.text+ " อ." + district_ctl.text+" จ." + province_ctl.text + " " + zipcode_ctl.text ;
                                         address.member = member;
+
+                                        EasyLoading.show();
                                         final addAddress = await AddressApi.addAddress(address);
+                                        EasyLoading.dismiss();
+
                                         if(addAddress!=0){
                                           Navigator.push(
                                               context,

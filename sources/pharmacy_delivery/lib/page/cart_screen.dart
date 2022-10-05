@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_multi_formatter/formatters/masked_input_formatter.dart';
 import 'package:pharmacy_delivery/api/advice_api.dart';
 import 'package:pharmacy_delivery/api/message_api.dart';
@@ -287,7 +288,9 @@ class _CartScreenState extends State<CartScreen> {
                                               ),
                                               InkWell(
                                                   onTap: () async {
+                                                    EasyLoading.show();
                                                     final stock =  await StockApi.fetchStock(advice!.pharmacist!.drugstore!.drugstoreID!, cart![index].medicine!.medId!);
+                                                    EasyLoading.dismiss();
                                                     Navigator.push(
                                                       context,
                                                       MaterialPageRoute(
@@ -504,6 +507,7 @@ class _CartScreenState extends State<CartScreen> {
 
                             Message message = Message(time: DateTime.now(),sender:'${advice!.pharmacist!.pharmacistID}',recipient:"${advice!.member!.MemberUsername}", messageType:"orders");
                             db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((messageSnapshot) {
+
                               print("Added message with ID: ${messageSnapshot.id}");
 
                               db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").update({"lastTime": DateTimetoString(message.time!) });
@@ -541,7 +545,10 @@ class _CartScreenState extends State<CartScreen> {
 
 
                               } ).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
+
                             } ).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
 
                           }
                         },

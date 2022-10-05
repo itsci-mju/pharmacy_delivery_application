@@ -1100,7 +1100,10 @@ class _ViewOrderDetailState extends State<ViewOrderDetail> {
         Advice new_advice =await OrdersApi.payOrders(widget.advice, receiptId);
         if(new_advice!=0){
 
-
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ViewReceipt(advice: new_advice,back: 1, backPage: widget.backPage, tab_index: widget.tab_index,)));
 
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:  Row(
             children: const [
@@ -1109,10 +1112,6 @@ class _ViewOrderDetailState extends State<ViewOrderDetail> {
             ],
           ),));
 
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ViewReceipt(advice: new_advice,back: 1, backPage: widget.backPage, tab_index: widget.tab_index,)));
 
         }else{
           showDialog(

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:pharmacy_delivery/page/add_address.dart';
 import 'package:pharmacy_delivery/page/confirm_order.dart';
 import 'package:pharmacy_delivery/page/view_drugstore.dart';
@@ -103,11 +104,14 @@ class _ListAddressState extends State<ListAddress> {
                       itemBuilder: (context, index) {
                       return GestureDetector(
                         onTap: () async {
+                          EasyLoading.show();
                           List<Pharmacist> listPharmacist = await PharmacistApi.checkPharmacistOnline(widget.drugstore.drugstoreID.toString());
                           final _random = new Random();
                           var pharmacist = listPharmacist[_random.nextInt(listPharmacist.length)];
 
                             final advice = await AdviceApi.addAdvice(member.MemberUsername.toString(), pharmacist.pharmacistID!);
+
+                          EasyLoading.dismiss();
                             if(advice!=0){
                               Message message = Message(messageType: "text",recipient: member.MemberUsername,sender:pharmacist.pharmacistID,text: "${pharmacist.drugstore!.drugstoreName} ยินดีให้บริการ", time: DateTime.now() );
                               db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((value) {
@@ -135,6 +139,8 @@ class _ListAddressState extends State<ListAddress> {
                             }else{
                               buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
                             }
+
+
 
                         },
                         child: Padding(
