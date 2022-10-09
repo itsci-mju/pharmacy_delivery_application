@@ -12,6 +12,7 @@ import '../costom/rounded_dropdown.dart';
 import '../costom/rounded_input_field.dart';
 import '../costom/rounded_phone_field.dart';
 import '../utils/constants.dart';
+import '../utils/custom_functions.dart';
 import '../utils/user_secure_storage.dart';
 import '../utils/widget_functions.dart';
 import 'list_address.dart';
@@ -105,7 +106,8 @@ class _AddAddressState extends State<AddAddress> {
 
                               RoundedPhoneField(
                                 onChanged: (String value) {
-                                  address.tel = value;
+                                  String tel = fromFormatPhone(value);
+                                  address.tel = tel;
                                 },
                               ),
 

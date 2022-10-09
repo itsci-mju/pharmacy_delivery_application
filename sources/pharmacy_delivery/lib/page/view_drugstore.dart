@@ -27,6 +27,7 @@ import '../class/Message.dart';
 import '../class/Review.dart';
 import '../costom/OptionButton.dart';
 import '../main.dart';
+import '../utils/custom_functions.dart';
 import '../utils/user_secure_storage.dart';
 import 'chat_screen.dart';
 import 'list_address.dart';
@@ -198,7 +199,7 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                                         ),
                                         addVerticalSpace(5),
                                         Text(
-                                          drugstore.drugstoreTel.toString(),
+                                          formatPhone(drugstore.drugstoreTel!),
                                           style: themeData.textTheme.bodyText2,
                                         ),
                                       ],

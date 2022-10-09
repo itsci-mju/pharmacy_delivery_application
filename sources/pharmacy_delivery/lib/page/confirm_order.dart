@@ -159,7 +159,7 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                                   color: Colors.black54,fontSize: 14.0,),
                               ),
                               Text(
-                                widget.listOrderdetail![0].orders!.address!.tel!,
+                                formatPhone( widget.listOrderdetail![0].orders!.address!.tel!),
                                 style: TextStyle(
                                   color: Colors.black54,fontSize: 14.0,),
                               ),

@@ -21,6 +21,7 @@ import '../costom/rounded_password_field.dart';
 import '../costom/rounded_phone_field.dart';
 import '../costom/text_field_container.dart';
 import '../utils/constants.dart';
+import '../utils/custom_functions.dart';
 import '../utils/validators.dart';
 import '../utils/widget_functions.dart';
 import 'main_page_guest.dart';
@@ -211,7 +212,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                         ),
                                         RoundedPhoneField(
                                           onChanged: (String value) {
-                                            member.MemberTel = value;
+                                            String tel = fromFormatPhone(value);
+                                            member.MemberTel = tel;
                                           },
                                         ),
                                         RoundedInputField(

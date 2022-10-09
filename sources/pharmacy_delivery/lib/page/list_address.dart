@@ -193,7 +193,7 @@ class _ListAddressState extends State<ListAddress> {
                                         color: Colors.black54,fontSize: 14.0,),
                                     ),
                                     Text(
-                                      listAddress![index].tel!,
+                                      formatPhone(listAddress![index].tel!),
                                       style: TextStyle(
                                         color: Colors.black54,fontSize: 14.0,),
                                     ),

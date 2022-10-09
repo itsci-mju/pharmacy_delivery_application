@@ -174,7 +174,7 @@ class _ViewReceiptState extends State<ViewReceipt> {
                                             color: Colors.black54,fontSize: 14.0,),
                                         ),
                                         Text(
-                                          orders.address!.tel!,
+                                          formatPhone(orders.address!.tel!),
                                           style: TextStyle(
                                             color: Colors.black54,fontSize: 14.0,),
                                         ),
