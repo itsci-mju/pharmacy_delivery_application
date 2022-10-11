@@ -215,18 +215,6 @@ class _CartScreenState extends State<CartScreen> {
                                               ),
                                               child:  Image.network(cart![index].medicine!.medImg ?? 'https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/medicine%2Fno_img.jpg?alt=media&token=588042db-f5cd-4706-abb5-30370a9e8ae0'
                                                 ,height: 250,width: size.width,),
-                                              /*FutureBuilder<String>(
-                                              future: medImg_Future ,
-                                              builder: (context, snapShot) {
-                                                if (snapShot.connectionState == ConnectionState.done && snapShot.hasData) {
-                                                  return Image.network(snapShot.data!,height: 250,width: size.width,);
-                                                }else{
-                                                  return  Image.asset("assets/images/no_img.jpg",height: 250,width: size.width, );
-                                                }
-                                              }
-                                          ),
-                                       */
-
                                             ),
                                           ),
                                         ),
@@ -502,52 +490,76 @@ class _CartScreenState extends State<CartScreen> {
                           backgroundColor: COLOR_CYAN,
                         ),
                         onPressed:() async {
+
                           if (_formKey.currentState!.validate() || widget.address ==null) {
-                            bool testResult = false;
+                            showDialog<String>(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)
+                                ),
+                                title:  Text('แจ้งเตือน' ,style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red), ),
+                                content:  Text('ยืนยันรายการยาที่แนะนำให้ลูกค้าใช่หรือไม่', style: TextStyle( fontSize: 16),),
+                                actions: <Widget>[
+                                  RaisedButton(
+                                    onPressed: () => Navigator.pop(context, 'OK'),
+                                    color: Colors.red,
+                                    child: Text('ไม่ใช่', style: TextStyle(color: Colors.white),),
+                                  ),
+                                  RaisedButton(
+                                    onPressed: () async {
+                                      bool testResult = false;
 
-                            Message message = Message(time: DateTime.now(),sender:'${advice!.pharmacist!.pharmacistID}',recipient:"${advice!.member!.MemberUsername}", messageType:"orders");
-                            db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((messageSnapshot) {
+                                      Message message = Message(time: DateTime.now(),sender:'${advice!.pharmacist!.pharmacistID}',recipient:"${advice!.member!.MemberUsername}", messageType:"orders");
+                                      db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").add(message.toDocument()).then((messageSnapshot) {
 
-                              print("Added message with ID: ${messageSnapshot.id}");
+                                        print("Added message with ID: ${messageSnapshot.id}");
 
-                              db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").update({"lastTime": DateTimetoString(message.time!) });
+                                        db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").update({"lastTime": DateTimetoString(message.time!) });
 
-                              Orders orders = Orders(orderDate:DateTime.now(),sumQuantity:sumQuantity,subtotalPrice: subtotalPrice,totalPrice:subtotalPrice+double.parse(shipping_controller.text==""? "0" :shipping_controller.text),orderStatus:"wcf",shippingCost:double.parse(shipping_controller.text==""? "0" :shipping_controller.text),address: widget.address,discount: 0  );
-                              db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(messageSnapshot.id).collection("Orders").add(orders.toDocument()).then((ordersSnapshot) {
-                              print("Added orders with ID: ${ordersSnapshot.id}");
+                                        Orders orders = Orders(orderDate:DateTime.now(),sumQuantity:sumQuantity,subtotalPrice: subtotalPrice,totalPrice:subtotalPrice+double.parse(shipping_controller.text==""? "0" :shipping_controller.text),orderStatus:"wcf",shippingCost:double.parse(shipping_controller.text==""? "0" :shipping_controller.text),address: widget.address,discount: 0  );
+                                        db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(messageSnapshot.id).collection("Orders").add(orders.toDocument()).then((ordersSnapshot) {
+                                          print("Added orders with ID: ${ordersSnapshot.id}");
 
-                              for(Cart c in cart!) {
-                                Map<String, dynamic> orderDetail = {
-                                  "medName": c.medicine!.medName,
-                                  "medId": c.medicine!.medId,
-                                  "medImg": c.medicine!.medImg,
-                                  "quantity": c.quantity,
-                                  "sumprice": c.sumprice,
-                                  "note": c.note,
-                                  "timeAdd" : DateTimetoString(DateTime.now())
-                                } ;
+                                          for(Cart c in cart!) {
+                                            Map<String, dynamic> orderDetail = {
+                                              "medName": c.medicine!.medName,
+                                              "medId": c.medicine!.medId,
+                                              "medImg": c.medicine!.medImg,
+                                              "quantity": c.quantity,
+                                              "sumprice": c.sumprice,
+                                              "note": c.note,
+                                              "timeAdd" : DateTimetoString(DateTime.now())
+                                            } ;
 
-                                db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(messageSnapshot.id).collection("Orders").doc(ordersSnapshot.id).collection("OrderDetail").add(orderDetail).then((value) {
-                                  print("Added orderDetail with ID: ${value.id}");
-                                  setState(() {
-                                    testResult = true;
-                                  });
+                                            db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").collection("Message").doc(messageSnapshot.id).collection("Orders").doc(ordersSnapshot.id).collection("OrderDetail").add(orderDetail).then((value) {
+                                              print("Added orderDetail with ID: ${value.id}");
+                                              setState(() {
+                                                testResult = true;
+                                              });
 
-                                });
-                              }
+                                            });
+                                          }
 
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => ChatScreen(
-                                        advice: advice!,
-                                      )));
-
-
-                              } ).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => ChatScreen(
+                                                    advice: advice!,
+                                                  )));
 
 
-                            } ).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+                                        } ).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+
+
+                                      } ).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
+                                    },
+                                    color: COLOR_CYAN,
+                                    child: Text('ใช่', style: TextStyle(color: Colors.white),),
+                                  ),
+                                ],
+                              ),
+                            );
 
 
                           }

@@ -154,7 +154,7 @@ class _ListChatState extends State<ListChat> {
                                                     children: <Widget>[
                                                       CircleAvatar(
                                                         radius: 30.0,
-                                                        backgroundImage: NetworkImage(docSnap['MemberImg']!=""? docSnap['MemberImg'] : 'https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/member%2Fuser.png?alt=media&token=5842fcab-a485-4e4a-936a-f157dd0da815'),
+                                                        backgroundImage: NetworkImage(docSnap['MemberImg']!=""&& docSnap['MemberImg']!=null ? docSnap['MemberImg'] : 'https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/member%2Fuser.png?alt=media&token=5842fcab-a485-4e4a-936a-f157dd0da815'),
                                                       ),
 
                                                       SizedBox(width: 10.0),

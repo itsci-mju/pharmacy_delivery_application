@@ -165,14 +165,15 @@ class _ChangeDeliveryStatusState extends State<ChangeDeliveryStatus> {
                                   ),
                                   style: TextStyle( fontSize: 14,color: Colors.black),
                                   onTap: () async{
-                                    DateTime? date = DateTime.now();
+                                    DateTime? date =  DateTime(orders.orderDate!.year-543,orders.orderDate!.month,orders.orderDate!.day, orders.orderDate!.hour, orders.orderDate!.minute, orders.orderDate!.millisecond);
+                                    DateTime? now = DateTime.now();
                                     FocusScope.of(context).requestFocus(new FocusNode());
                                     date = await showDatePicker(
                                         context: context,
                                        // locale:  Locale("th","TH"),
                                         initialDate:date,
-                                        firstDate:  DateTime(date.year,date.month,date.day-9,date.minute,date.second,date.millisecond),
-                                        lastDate:  date,
+                                        firstDate:  date,
+                                        lastDate:  now,
                                     );
 
                                     if(date != null){
@@ -308,7 +309,7 @@ class _ChangeDeliveryStatusState extends State<ChangeDeliveryStatus> {
                                                 Navigator.push(
                                                     context,
                                                     MaterialPageRoute(
-                                                        builder: (context) => PharmacistHomePage(tab_index: 2)));
+                                                        builder: (context) => PharmacistHomePage(tab_index: 3)));
                                                 buildToast("เพิ่มเลขพัสดุสำเร็จ",Colors.green);
                                               }else{
                                                 buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);

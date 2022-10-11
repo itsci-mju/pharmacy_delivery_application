@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:intl/intl.dart';
 import 'package:pharmacy_delivery/api/orders_api.dart';
@@ -892,8 +893,10 @@ class _ViewOrderDetailState extends State<ViewOrderDetail> {
                                               if(score==0 || comment.trim()=="" || comment== null ){
                                                  buildToast("กรุณากรอกข้อมูลรีวิวให้ครบ", Colors.red);
                                               }else{
+                                                EasyLoading.show();
                                                 Review review = Review(score: score,comment: comment );
                                                 final addReview = await ReviewApi.addReview(orders.orderId!, review);
+                                                EasyLoading.dismiss();
                                                 if(addReview==1){
                                                   Navigator.push(
                                                       context,
@@ -980,7 +983,7 @@ class _ViewOrderDetailState extends State<ViewOrderDetail> {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => PharmacistHomePage(tab_index: 2)));
+                                          builder: (context) => PharmacistHomePage(tab_index: 3)));
                                   buildToast("จัดส่งยาให้ลูกค้าสำเร็จ",Colors.green);
 
                                 }else{
