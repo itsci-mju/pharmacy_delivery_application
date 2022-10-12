@@ -7,6 +7,8 @@ const COLOR_WHITE = Colors.white;
 const COLOR_DARK_BLUE = Color.fromRGBO(20, 25, 45, 1.0);
 const COLOR_CYAN = Colors.cyan;
 const COLOR_CYAN_ACCENT = Color(0x2F00BCD4);
+const COLOR_ORANGE = Color(0xF5FCBF49);
+
 
  final TextStyle bodyTextMessage =
 TextStyle(fontSize: 13, letterSpacing: 1.5, fontWeight: FontWeight.w600);

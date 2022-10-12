@@ -39,6 +39,35 @@ class ReviewApi{
     }
   }
 
+  static Future<double> avg_score_Review(Drugstore drugstore) async {
+    final jsonDrugstore = drugstore.toJsonDrugstoreID();
+    final response = await http.post(Uri.parse(URLRequest.URL_list_review),
+        body: jsonEncode(jsonDrugstore),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json"
+        });
+    print("sum_score_Review : "+response.body.toString());
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> map = json.decode(response.body);
+      List<dynamic> reviews = map["result"];
+
+      double sumScore = 0.0;
+
+      if(reviews !=[]){
+        for (dynamic r in reviews) {
+          sumScore+= Review.fromJson(r).score! ;
+        }
+      }
+
+
+      return sumScore/reviews.length;
+    } else {
+      throw Exception();
+    }
+  }
+
   static Future<List<Member>> fetchMember_Review(List<Review> listreview) async {
     List<Member>  listMember =[];
 

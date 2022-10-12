@@ -26,6 +26,7 @@ import '../class/Orders.dart';
 import '../utils/constants.dart';
 import '../utils/payment_widget.dart';
 import 'chat_screen.dart';
+import 'main_page_member.dart';
 
 class ConfirmOrder extends StatefulWidget {
   final List<OrderDetail>? listOrderdetail;
@@ -609,14 +610,28 @@ class _ConfirmOrderState extends State<ConfirmOrder> {
                                                     RaisedButton.icon(
                                                       color: Colors.orange,
                                                       icon: Icon(Icons.arrow_back, color: Colors.white,),
-                                                      label: Text('กลับหน้าแชท', style: TextStyle(color: Colors.white),),
+                                                      label: Text('ชำระเงินภายหลัง', style: TextStyle(color: Colors.white),),
                                                       onPressed: () async {
-                                                        print("oddddd ${advice!.orders!.orderId}");
-                                                        Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                                builder: (context) =>
-                                                                    ChatScreen(advice: advice!,shipping: "")));
+
+                                                        String whoEnd =  "memberEnd";
+                                                        await db.collection('${advice!.pharmacist!.pharmacistID}').doc("${advice!.member!.MemberUsername}").update({"isEnd": whoEnd,"lastTime":"" }).then((value) async {
+                                                          EasyLoading.show();
+                                                          final endAdvice = await AdviceApi.endAdvice(advice!);
+                                                          EasyLoading.dismiss();
+                                                          if(endAdvice==1){
+                                                            // back to home
+                                                            Navigator.push(
+                                                              context,
+                                                              MaterialPageRoute(
+                                                                  builder: (context) => MainPageMember()),
+                                                            );
+                                                            buildToast("จบการสนทนา",Colors.green);
+
+                                                          }else{
+                                                            buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red);
+                                                          }
+
+                                                        }).catchError((error) =>  buildToast("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",Colors.red));
 
                                                       },
                                                     ),

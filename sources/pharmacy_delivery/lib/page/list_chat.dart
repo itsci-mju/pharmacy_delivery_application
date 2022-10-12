@@ -67,7 +67,7 @@ class _ListChatState extends State<ListChat> {
                 )
               ],
             ),
-            backgroundColor: COLOR_CYAN,
+            backgroundColor: COLOR_ORANGE,
             automaticallyImplyLeading: false,
             //elevation: 0,
           ),

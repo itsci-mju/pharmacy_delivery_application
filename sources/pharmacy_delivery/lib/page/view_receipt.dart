@@ -5,10 +5,12 @@ import 'package:pharmacy_delivery/page/view_order_detail.dart';
 
 import '../api/orderDetail_api.dart';
 import '../class/Advice.dart';
+import '../class/Member.dart';
 import '../class/OrderDetail.dart';
 import '../class/Orders.dart';
 import '../utils/constants.dart';
 import '../utils/custom_functions.dart';
+import '../utils/user_secure_storage.dart';
 import '../utils/widget_functions.dart';
 import 'chat_screen.dart';
 
@@ -25,6 +27,8 @@ class ViewReceipt extends StatefulWidget {
 
 class _ViewReceiptState extends State<ViewReceipt> {
   List<OrderDetail>? listOrderDetail;
+  Member? member = Member();
+
   Future getListOrderDetail() async {
     final listOrderDetail = await OrderDetailApi.listOrderDetail(widget.advice.orders!.orderId!);
     setState(() {
@@ -32,10 +36,18 @@ class _ViewReceiptState extends State<ViewReceipt> {
     });
   }
 
+  Future getMember() async {
+    final member = await UserSecureStorage.getMember() ;
+    setState(() {
+      this.member = member;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     getListOrderDetail();
+    getMember();
   }
 
 
@@ -79,7 +91,7 @@ class _ViewReceiptState extends State<ViewReceipt> {
 
             },
           ),
-          backgroundColor: COLOR_CYAN,
+          backgroundColor: member!.MemberUsername==null? COLOR_ORANGE: COLOR_CYAN,
         ),
         backgroundColor: Color(0xFFF3F5F7),
         body: SingleChildScrollView(

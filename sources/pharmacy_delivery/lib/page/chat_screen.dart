@@ -371,7 +371,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 )
                     : PreferredSize(child: SizedBox(), preferredSize: Size.fromHeight(0),),
 
-                backgroundColor: COLOR_CYAN,
+                backgroundColor:curentUser_id == advice!.pharmacist!.pharmacistID? COLOR_ORANGE  : COLOR_CYAN,
                 //elevation: 0,
               ),
               body: Column(
@@ -480,7 +480,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.6),
                 decoration: BoxDecoration(
-                    color: isMe ? COLOR_CYAN : Colors.grey[200],
+                    color: curentUser_id == advice!.pharmacist!.pharmacistID?  isMe ?  COLOR_ORANGE  : Colors.grey[200]
+                    : isMe ?  COLOR_CYAN : Colors.grey[200]
+                    ,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(16),
                       topRight: Radius.circular(16),
@@ -499,7 +501,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 constraints: BoxConstraints(
                     maxWidth: MediaQuery.of(context).size.width * 0.6),
                 decoration: BoxDecoration(
-                    border: Border.all(color: isMe ? COLOR_CYAN : Colors.grey),
+                    border: Border.all(color: curentUser_id == advice!.pharmacist!.pharmacistID?  isMe ?  COLOR_ORANGE  : Colors.grey
+                        : isMe ?  COLOR_CYAN : Colors.grey),
                     color:  Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(16),
@@ -937,7 +940,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   decoration: InputDecoration.collapsed(
                     hintText: 'Aa',
                     hintStyle: TextStyle(color: Colors.grey[500]),
-                    focusColor: Colors.cyan,
+                    focusColor:curentUser_id == advice!.pharmacist!.pharmacistID?  COLOR_ORANGE  : COLOR_CYAN,
                   ),
                 ),
               ),
@@ -945,7 +948,7 @@ class _ChatScreenState extends State<ChatScreen> {
             IconButton(
               icon: Icon(Icons.send),
               iconSize: 25.0,
-              color: COLOR_CYAN,
+              color:curentUser_id == advice!.pharmacist!.pharmacistID?  COLOR_ORANGE  : COLOR_CYAN,
               onPressed: () async {
                 if (message_ctl.text.isNotEmpty && message_ctl.text.trim() != "") {
                   FocusScope.of(context).unfocus();

@@ -108,7 +108,7 @@ class _ViewOrderDetailState extends State<ViewOrderDetail> {
 
             },
           ),
-          backgroundColor: COLOR_CYAN,
+          backgroundColor: member!.MemberUsername==null? COLOR_ORANGE: COLOR_CYAN,
          // automaticallyImplyLeading: false,
         ),
         backgroundColor: Color(0xFFF3F5F7),

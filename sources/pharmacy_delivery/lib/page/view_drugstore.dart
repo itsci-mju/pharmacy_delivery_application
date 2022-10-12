@@ -53,6 +53,7 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
   List<Review>? listReview;
   List<Member>? listMember;
   Member? member = Member();
+  double sumScore= 0.0;
 
   List<Pharmacist>? listPharmacist;
   int test = 0;
@@ -67,17 +68,17 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
     final listReview = await ReviewApi.fetchReview(widget.drugstore);
     final listMember = await ReviewApi.fetchMember_Review(listReview);
     final listPharmacist = await PharmacistApi.checkPharmacistOnline(widget.drugstore.drugstoreID.toString());
-   // final  drugstoreImg = await StorageImage().downloadeURL("drugstore",widget.drugstore.drugstoreImg?? 'drugstore.jpg');
-
-   // final   member = await UserSecureStorage.getMember() ;
+    sumScore= 0.0;
     if (test == 0) {
       setState(() {
         this.listCoupons = listCoupons;
         this.listReview = listReview;
         this.listMember = listMember;
         this.listPharmacist = listPharmacist;
-       // this.drugstoreImg=drugstoreImg;
-     //   this.member = member;
+        for(Review r in listReview){
+          sumScore= sumScore + r.score!;
+        }
+
         test = 1;
       });
     }
@@ -95,9 +96,11 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
     setState(() {
       test = 0;
       futureData = init();
+
     });
 
-    // init();
+
+
   }
 
   @override
@@ -202,6 +205,29 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                                           formatPhone(drugstore.drugstoreTel!),
                                           style: themeData.textTheme.bodyText2,
                                         ),
+                                        addVerticalSpace(5),
+                                        if(listReview!.length > 0)
+                                          Row(
+                                            children: [
+                                              Text(
+                                                "คะแนนรีวิว : " ,
+                                                style: themeData.textTheme.bodyText2,
+                                              ),
+                                              SmoothStarRating(
+                                                isReadOnly: true,
+                                                starCount: 5,
+                                                rating: sumScore/(listReview!.length),
+                                                size: 20,
+                                                color: Colors.orange,
+                                                borderColor: Colors.orange,
+                                              ),
+                                              addHorizontalSpace(10),
+                                              Text(
+                                                (sumScore/(listReview!.length)).toString()+"/5.0 " ,
+                                                style: themeData.textTheme.bodyText2,
+                                              ),
+                                            ],
+                                          ),
                                       ],
                                     ),
                                     Row(children: [
@@ -249,10 +275,16 @@ class _ViewDrugstoreState extends State<ViewDrugstore> {
                               addVerticalSpace(padding),
                               Padding(
                                 padding: sidePadding,
-                                child: Text(
-                                  "รีวิว",
-                                  textAlign: TextAlign.justify,
-                                  style: themeData.textTheme.headline4,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "รีวิว",
+                                      textAlign: TextAlign.justify,
+                                      style: themeData.textTheme.headline4,
+                                    ),
+
+                                  ],
                                 ),
                               ),
                               addVerticalSpace(10),
@@ -469,41 +501,7 @@ Widget information_Review(Review review, Member member, BuildContext context) {
                 borderRadius: BorderRadius.circular(44.0),
               ),
             ),
-            /*
-            FutureBuilder<String>(
-                future: membereImg_Future ,
-                builder: (context, snapShot) {
-                  if (snapShot.connectionState == ConnectionState.done && snapShot.hasData) {
-                    return Container(
-                      height: 45.0,
-                      width: 45.0,
-                      margin: EdgeInsets.only(right: 16.0),
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: NetworkImage(snapShot.data!),
-                          fit: BoxFit.cover,
-                        ),
-                        borderRadius: BorderRadius.circular(44.0),
-                      ),
-                    );
-                  }else{
-                    return Container(
-                      height: 45.0,
-                      width: 45.0,
-                      margin: EdgeInsets.only(right: 16.0),
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage("assets/images/user.png"),
-                          fit: BoxFit.cover,
-                        ),
-                        borderRadius: BorderRadius.circular(44.0),
-                      ),
-                    );
-                  }
 
-              }
-            ),
-            */
             Expanded(
               child: Text(
                 member.MemberUsername.toString(),
@@ -587,83 +585,13 @@ class InformationTile_Coupon extends StatelessWidget {
               ),
             ),
           ),
-/*
-            Text(
-              "ส่วนลด ฿" +
-                  coupon.discount.toString() +
-                  "\n ขั้นต่ำ ฿" +
-                  coupon.minimumPrice.toString() +
-                  "\n หมดอายุ " +
-                  coupon.endDate,
-              style: themeData.textTheme.bodyText1,
-            ),
-          ),
-          addVerticalSpace(10),
-          Text(
-            coupon.couponName,
-            style: themeData.textTheme.headline6,
-          )*/
+
         ],
       ),
     );
   }
 
-/*
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: getProportionateScreenWidth(20)),
-      child: SizedBox(
-        width: getProportionateScreenWidth(242),
-        height: getProportionateScreenWidth(100),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            children: [
-              Image.asset(
-                "assets/images/drugstore.jpg",
-                fit: BoxFit.cover,
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF343434).withOpacity(0.4),
-                      Color(0xFF343434).withOpacity(0.15),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: getProportionateScreenWidth(15.0),
-                  vertical: getProportionateScreenWidth(10),
-                ),
-                child: Text.rich(
-                  TextSpan(
-                    style: TextStyle(color: Colors.white),
-                    children: [
-                      TextSpan(
-                        text: "$coupon\n",
-                        style: TextStyle(
-                          fontSize: getProportionateScreenWidth(18),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextSpan(text: "$numOfBrands Brands")
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-*/
+
 
 }
 

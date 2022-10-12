@@ -2,6 +2,7 @@ import 'dart:core';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pharmacy_delivery/api/review_api.dart';
 import 'package:pharmacy_delivery/class/Drugstore.dart';
 import 'package:pharmacy_delivery/class/Member.dart';
 import 'package:pharmacy_delivery/costom/BorderIcon.dart';
@@ -10,6 +11,7 @@ import 'package:pharmacy_delivery/utils/constants.dart';
 import 'package:pharmacy_delivery/utils/storage_image.dart';
 import 'package:firebase_storage/firebase_storage.dart' ;
 import 'package:pharmacy_delivery/utils/widget_functions.dart';
+import 'package:smooth_star_rating/smooth_star_rating.dart';
 
 import '../api/drugstores_api.dart';
 import '../utils/user_secure_storage.dart';
@@ -96,23 +98,7 @@ class _SearchDrugstorePageState extends State<SearchDrugstorePage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /*
-                  addVerticalSpace(padding),
 
-                 // addVerticalSpace(20),
-                  Padding(
-                    padding: sidePadding,
-                    child: member!.MemberUsername!=null
-                        ? Text(
-                      "สวัสดี " + member!.MemberUsername.toString(),
-                      style: themeData.textTheme.bodyText2,
-                    )
-                        : Text(
-                      "ยินดีต้อนรับ",
-                      style: themeData.textTheme.bodyText2,
-                    ),
-                  ),
-*/
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 0),
                     child: Row(
@@ -178,7 +164,7 @@ class _SearchDrugstorePageState extends State<SearchDrugstorePage> {
 
   Widget buildSearch() => SearchWidget(
         text: query,
-        hintText: "ค้นหาร้านขายยา",
+        hintText: "ค้นหาชื่อหรือที่อยู่ร้านขายยา",
         onChanged: searchDrugstore,
       );
 
@@ -198,26 +184,36 @@ class _SearchDrugstorePageState extends State<SearchDrugstorePage> {
 class RealEstateItem extends StatefulWidget {
   final Drugstore drugstore;
 
-   RealEstateItem({required this.drugstore});
+  RealEstateItem(
+      {Key? key, required this.drugstore, })
+      : super(key: key);
+
 
   @override
   State<RealEstateItem> createState() => _RealEstateItemState();
 }
 
 class _RealEstateItemState extends State<RealEstateItem> {
-  //Future<String>? drugstoreImg_Future ;
+  double avg_score=0.0 ;
+
+  Future calAvg() async{
+    final avg_score = await ReviewApi.avg_score_Review(widget.drugstore);
+    setState(() {
+      this.avg_score= avg_score;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-  //  drugstoreImg_Future = StorageImage().downloadeURL("drugstore",widget.drugstore.drugstoreImg?? 'drugstore.jpg');
+    calAvg();
+
   }
 
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
     final Size size = MediaQuery.of(context).size;
-
 
     return GestureDetector(
       onTap: () {
@@ -238,50 +234,35 @@ class _RealEstateItemState extends State<RealEstateItem> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10.0),
                   child: Image(height: 250.0, width:  size.width, image: NetworkImage(widget.drugstore.drugstoreImg ?? 'https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/drugstore%2Fdrugstore.jpg?alt=media&token=c73901ea-84ef-4424-9c6c-23c3d1002091',), fit: BoxFit.cover,),
-                  //Image.network(snapShot.data!,fit: BoxFit.cover,height: 250.0, width:  size.width,),
-                  // FadeInImage(height: 250.0, width:  size.width, image: NetworkImage(widget.drugstore.drugstoreImg ?? 'https://firebasestorage.googleapis.com/v0/b/pharmacy-delivery-737df.appspot.com/o/drugstore%2Fdrugstore.jpg?alt=media&token=c73901ea-84ef-4424-9c6c-23c3d1002091',),placeholder: AssetImage("assets/images/drugstore.jpg"),)
                 )
-/*
-                FutureBuilder<String>(
-                    future: drugstoreImg_Future ,
-                    builder: (context, snapShot) {
-                      if (snapShot.connectionState == ConnectionState.done && snapShot.hasData) {
-                        return
-                          ClipRRect(
-                          borderRadius: BorderRadius.circular(10.0),
-                          child: Image(height: 250.0, width:  size.width, image: NetworkImage(snapShot.data!,), fit: BoxFit.cover,),
-                          //Image.network(snapShot.data!,fit: BoxFit.cover,height: 250.0, width:  size.width,),
-                          // FadeInImage(image: NetworkImage(snapShot.data!), placeholder: AssetImage("assets/images/drugstore.jpg"),)
-                        );
-
-                      }else{
-                        return ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset("assets/images/no_img.jpg",fit: BoxFit.cover,height: 250.0 , width:  size.width,));
-                      }
-                    }
-                ),
-
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    image: DecorationImage(
-                      image: NetworkImage(drugstore.drugstoreImg! ),
-                      fit: BoxFit.cover
-                    )
-                  ),
-                )
-
-
-                */
               ],
             ),
             addVerticalSpace(5),
+
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   widget.drugstore.drugstoreName!,
                   style: themeData.textTheme.headline3,
+                ),
+                if(avg_score>0)
+                Row(
+                  children: [
+                    SmoothStarRating(
+                      isReadOnly: true,
+                      starCount: 5,
+                      rating:avg_score,
+                      size: 20,
+                      color: Colors.orange,
+                      borderColor: Colors.orange,
+                    ),
+                    addHorizontalSpace(10),
+                    Text(
+                      avg_score.toString(),
+                      style: themeData.textTheme.bodyText2,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -300,104 +281,3 @@ class _RealEstateItemState extends State<RealEstateItem> {
   }
 }
 
-/*
-class RealEstateItem extends StatelessWidget {
-  final Drugstore drugstore;
-  final StorageImage storageImage = StorageImage();
-  Future<String>? drugstoreImg_Future ;
-
-  RealEstateItem({required this.drugstore,});
-
-
-  @override
-  void initState() {
-    drugstoreImg_Future = StorageImage().downloadeURL("drugstore",drugstore.drugstoreImg?? 'drugstore.jpg');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData themeData = Theme.of(context);
-    final Size size = MediaQuery.of(context).size;
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => viewDrugstore(drugstore: drugstore)),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 20,),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                FutureBuilder<String>(
-                    future: drugstoreImg_Future ,
-                    builder: (context, snapShot) {
-                      if (snapShot.connectionState == ConnectionState.done && snapShot.hasData) {
-                        return
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: Image(
-                              height: 240.0,
-                              width:  size.width,
-                              image: NetworkImage(snapShot.data!,),
-                              fit: BoxFit.cover,
-                            ),
-                            //Image.network(snapShot.data!,fit: BoxFit.cover,height: 240.0, width:  size.width,),
-                            // FadeInImage(image: NetworkImage(snapShot.data!), placeholder: AssetImage("assets/images/drugstore.jpg"),)
-                          );
-
-                      }else{
-                        return ClipRRect(
-                            borderRadius: BorderRadius.circular(10.0),
-                            child: Image.asset("assets/images/drugstore.jpg",fit: BoxFit.cover,height: 240.0 , width:  size.width,));
-                      }
-                    }
-                ),
-                /*
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10.0),
-                    image: DecorationImage(
-                      image: NetworkImage(drugstore.drugstoreImg! ),
-                      fit: BoxFit.cover
-                    )
-                  ),
-                )
-
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child:
-                    Image.network(drugstore.drugstoreImg!)),
-                       // Image.asset("assets/images/" + drugstore.drugstoreImg!)),
-                */
-              ],
-            ),
-            addVerticalSpace(5),
-            Row(
-              children: [
-                Text(
-                  drugstore.drugstoreName!,
-                  style: themeData.textTheme.headline3,
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Text(
-                  drugstore.drugstoreAddress!,
-                  style: themeData.textTheme.bodyText2,
-                )
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
- */

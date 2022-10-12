@@ -35,7 +35,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
   TabBar get _tabBar => TabBar(
         labelStyle: TextStyle(fontSize: 16),
         isScrollable: true,
-        indicatorColor: Color(0xFD00BCD4),
+        indicatorColor: Color(0xFFFCBF49),
         tabs: [
           Tab(text :"รอชำระเงิน"),
           Tab(text: "รับที่ร้าน"), //store
@@ -67,9 +67,34 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
         initialIndex: index ?? 0,
         child: Scaffold(
           appBar: AppBar(
-            title: Text(
-              "รายการคำสั่งซื้อ",
-              style: TextStyle(fontSize: 18),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "รายการคำสั่งซื้อ",
+                  style: TextStyle(fontSize: 18),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.store,size: 20,),
+                        addHorizontalSpace(5),
+                        Text( pharmacist!.drugstore!.drugstoreName!,
+                          style:  TextStyle(fontSize: 16,fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+
+                    Text(
+                      pharmacist!.pharmacistName!.split(" ").first,
+                      style: TextStyle(fontSize: 14),
+                    ),
+
+                  ],
+                ),
+              ],
             ),
             bottom: PreferredSize(
               preferredSize: _tabBar.preferredSize,
@@ -78,7 +103,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
                 child: _tabBar,
               ),
             ),
-            backgroundColor: COLOR_CYAN,
+            backgroundColor: COLOR_ORANGE ,
             automaticallyImplyLeading: false,
           ),
           backgroundColor: Color(0xFFF3F5F7),
@@ -159,7 +184,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
                                                       Text(
                                                         "รอชำระเงิน",
                                                         style: TextStyle(
-                                                          color: COLOR_CYAN,fontSize: 14.0,),
+                                                          color: COLOR_CYAN ,fontSize: 14.0,),
                                                       ),
                                                     ],
                                                   ),
@@ -382,7 +407,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
                                                       Text(
                                                         "ที่ต้องจัดส่ง",
                                                         style: TextStyle(
-                                                          color: COLOR_CYAN,fontSize: 14.0,),
+                                                          color: COLOR_CYAN ,fontSize: 14.0,),
                                                       ),
                                                     ],
                                                   ),
@@ -500,7 +525,7 @@ class _ListPaymentPageState extends State<ListPaymentPage> {
                                                             Text(
                                                               "จัดส่งแล้ว",
                                                               style: TextStyle(
-                                                                color: COLOR_CYAN,fontSize: 14.0,),
+                                                                color: COLOR_CYAN ,fontSize: 14.0,),
                                                             ),
                                                           ],
                                                         ),

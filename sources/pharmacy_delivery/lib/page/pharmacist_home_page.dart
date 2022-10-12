@@ -66,7 +66,7 @@ class _PharmacistHomePageState extends State<PharmacistHomePage> {
                   type: BottomNavigationBarType.fixed,
                   backgroundColor: Colors.white,
                   currentIndex: index,
-                  selectedItemColor: Colors.cyan,
+                  selectedItemColor: COLOR_ORANGE,
                   unselectedItemColor: Colors.grey.withOpacity(0.5),
                   elevation: 0,
                   items: [
