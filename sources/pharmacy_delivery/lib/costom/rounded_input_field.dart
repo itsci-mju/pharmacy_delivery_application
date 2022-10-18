@@ -18,6 +18,7 @@ class RoundedInputField extends StatelessWidget {
   final TextEditingController? controller;
   final List<String>? allUsername  ;
   final int? maxLines;
+  final String? initialValue;
 
   //final FormFieldValidator<String> validator;
 
@@ -31,7 +32,7 @@ class RoundedInputField extends StatelessWidget {
     required this.errorMessage,
     required this.formatRexExp,
     this.keyboardType,
-    this.onChanged, this.allUsername, this.maxLines,
+    this.onChanged, this.allUsername, this.maxLines, this.initialValue,
   });
 
   @override
@@ -68,6 +69,7 @@ class RoundedInputField extends StatelessWidget {
                 return null;
             }
           },
+          initialValue: initialValue,
           inputFormatters: [
             FilteringTextInputFormatter.allow(formatRexExp),
              LengthLimitingTextInputFormatter(maxlength)

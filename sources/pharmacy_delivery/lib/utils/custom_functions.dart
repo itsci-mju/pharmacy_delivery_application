@@ -6,12 +6,16 @@ String formatCurrency(num amount,{int decimalCount = 0}){
 }
 
 String formatPhone(String phoneNum){
-  String num1 = phoneNum.substring(0,3);
-  String num2 = phoneNum.substring(3,6);
-  String num3 = phoneNum.substring(6);
+  if(phoneNum==''){
+    return "";
+  }else{
+    String num1 = phoneNum.substring(0,3);
+    String num2 = phoneNum.substring(3,6);
+    String num3 = phoneNum.substring(6);
+    final formatPhone = "${num1}-${num2}-${num3}";
+    return formatPhone;
+  }
 
-  final formatPhone = "${num1}-${num2}-${num3}";
-  return formatPhone;
 }
 
 String fromFormatPhone(String phoneNum){

@@ -11,12 +11,13 @@ class RoundedPhoneField extends StatelessWidget {
 
   final ValueChanged<String>? onChanged;
   final TextEditingController? controller ;
+  final String? initialValue;
 
   //final FormFieldValidator<String> validator;
 
   const RoundedPhoneField({
     this.controller,
-    this.onChanged,
+    this.onChanged, this.initialValue,
   });
 
   @override
@@ -39,7 +40,7 @@ class RoundedPhoneField extends StatelessWidget {
           inputFormatters: [
             MaskedInputFormatter('###-###-####',allowedCharMatcher: RegExp(r'[0-9]'))
           ],
-          //initialValue: "0",
+          initialValue: initialValue,
           keyboardType: TextInputType.number,
           //style: TextStyle(fontSize: 16),
           controller: controller,

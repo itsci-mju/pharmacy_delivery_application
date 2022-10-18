@@ -30,6 +30,8 @@ class _AddAddressState extends State<AddAddress> {
   Member member = Member();
   Address address = Address();
 
+  TextEditingController name_ctl = TextEditingController();
+  TextEditingController phone_ctl = TextEditingController();
   TextEditingController address_ctl = TextEditingController();
   TextEditingController subdistrict_ctl = TextEditingController();
   TextEditingController district_ctl = TextEditingController();
@@ -51,6 +53,7 @@ class _AddAddressState extends State<AddAddress> {
     setState(() {
       address.member = member;
     });
+
   }
 
   @override
@@ -58,6 +61,8 @@ class _AddAddressState extends State<AddAddress> {
     final Size size = MediaQuery.of(context).size;
     final double padding = 10;
     final sidePadding = EdgeInsets.symmetric(horizontal: padding,vertical: 5);
+    name_ctl.text = name_ctl.text==''? member.MemberName?? '' : name_ctl.text;
+    phone_ctl.text = phone_ctl.text==""? formatPhone(member.MemberTel??"") :phone_ctl.text;
 
     return Scaffold(
       appBar: AppBar(
@@ -99,12 +104,11 @@ class _AddAddressState extends State<AddAddress> {
                                 maxlength: 100,
                                 hintText: "ชื่อ-นามสกุล",
                                 icon: Icons.person,
-                                onChanged: (String value) {
-                                  address.name = value;
-                                },
+                                controller: name_ctl,
                               ),
 
                               RoundedPhoneField(
+                                controller: phone_ctl,
                                 onChanged: (String value) {
                                   String tel = fromFormatPhone(value);
                                   address.tel = tel;
@@ -185,6 +189,8 @@ class _AddAddressState extends State<AddAddress> {
                                       if (_formKey.currentState!.validate()){
                                         address.addressDetail = address_ctl.text +" ต." + subdistrict_ctl.text+ " อ." + district_ctl.text+" จ." + province_ctl.text + " " + zipcode_ctl.text ;
                                         address.member = member;
+                                        address.name = name_ctl.text;
+                                        address.tel = fromFormatPhone(phone_ctl.text);
 
                                         EasyLoading.show();
                                         final addAddress = await AddressApi.addAddress(address);

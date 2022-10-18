@@ -13,6 +13,7 @@ import '../utils/custom_functions.dart';
 import '../utils/user_secure_storage.dart';
 import '../utils/widget_functions.dart';
 import 'chat_screen.dart';
+import 'main_page_member.dart';
 
 class ViewReceipt extends StatefulWidget {
   final Advice advice;
@@ -78,7 +79,7 @@ class _ViewReceiptState extends State<ViewReceipt> {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            ChatScreen(advice: widget.advice,shipping: "")));
+                            MainPageMember()));
               }else{
                 Navigator.push(
                     context,

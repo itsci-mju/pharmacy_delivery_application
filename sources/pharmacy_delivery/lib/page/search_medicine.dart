@@ -147,7 +147,7 @@ class _SearchMedicineState extends State<SearchMedicine> {
                   )
           ],
         ),
-        backgroundColor: COLOR_CYAN,
+        backgroundColor: COLOR_ORANGE,
       ),
       backgroundColor: Color(0xFFF3F5F7),
       body: Container(
